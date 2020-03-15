@@ -5,29 +5,26 @@ Created on Sun Mar 15 10:48:57 2020
 @author: Viljar Femoen
 """
 from population import Population
-from region import Region
-from port import Port
+from building import Building
+from route import Route
+import random
 
-class Country:
+class Room:
 
     #name: str
     #region: Region
     #population: int
-    #airports: list of country names and probabilities ([[A, 0.5], [B, 0.1])
-    #seaports: list of country names and probabilities ([[A, 0.5], [B, 0.1])
-    #borders: list of names of bordering countries
-    def __init__(self, name, region,  population, airports, seaports, borders):
+    #routes: list of route names and amount ([[A, 5], [B, 100])
+    def __init__(self, name, building,  population, routes):
         self.name = name 
-        self.region = region 
+        self.building = building 
         self.population = Population(population) 
-        self.ports = [] #list of port destinations and probabilities
-        self.borders = borders 
+        self.routes = [] #list of routes  
 
-        for country in airports+seaports:
-            self.ports.append(Port(self.name, country[0], country[1])) #appends a new port route to ports
+        for room in routes:
+            self.routes.append(Route(self.name, room[0], room[1])) #appends a new route to self.routes
 
 
     def isInfected(self):
         return self.population.isInfected()
-    
     
