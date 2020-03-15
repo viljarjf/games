@@ -8,23 +8,25 @@ Created on Sun Mar 15 12:13:32 2020
 class Population:
 
     def __init__(self, total, healthy=0, infected=0, dead=0):
-        self.total=total
-        self.healthy=total
-        self.infected=infected
-        self.dead=dead
+        self.__total=total
+        self.__healthy=total
+        self.__infected=infected
+        self.__dead=dead
     
     def getHealthy(self):
-        return self.healthy
+        return self.__healthy
     
     def getTotal(self):
-        return self.total
+        return self.__total
 
     def getInfected(self):
-        return self.infected
+        return self.__infected
     
     def getDead(self):
-        return self.dead
+        return self.__dead
     
     def isInfected(self):
-        return self.infected>0
+        return self.__infected > 0
     
+    def isDead(self):
+        return self.__dead == self.__total

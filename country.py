@@ -17,6 +17,6 @@ class Country:
         self.borders = borders #list of countries
 
     def isInfected(self):
-        return population.isInfected()
+        return self.population.isInfected()
     
      
