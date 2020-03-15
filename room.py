@@ -25,17 +25,8 @@ class Room:
         for room in routes:
             self.routes.append(Route(room[0], room[1])) #appends a new route to self.routes
 
-    def getName(self):
-        return self.name
-
     def isInfected(self):
         return self.population.isInfected()
-    
-    def move(self):
-        for route in self.routes:
-            fracInf = self.population.getFractionInfected()
-            infected = route.amount*fracInf
-            route.destination.infect(int(infected*0.1))
 
     def infect(self, amount):
         self.population.infect(amount)
