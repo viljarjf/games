@@ -13,9 +13,9 @@ import weakref
 class Room:
 
     #name: str
-    #region: Region
+    #building: Building
     #population: int
-    #routes: list of route names and percentage ([[A, 5], [B, 85], [C, 10]])
+    #routes: list of route names and amount ([[A, 5], [B, 85], [C, 10]])
     def __init__(self, name, building,  population, routes):
         self.name = name 
         self.building = building 

@@ -19,8 +19,9 @@ class Window():
     padX = 30
     padY = 30
     box_pad = 10
+    info_pad = 20
     start_date = "02.03.2020"
-    start_time = "08:00"
+    start_time = "08:15"
 
     def __init__(self):
         #Initial variables and main tkinter window
@@ -45,24 +46,64 @@ class Window():
         self.date_box.insert('0.0', self.start_date)
         self.date_box.configure(state = "disabled")
         self.date_box.place(x = self.root.winfo_width() -self.padX, y = self.root.winfo_height()-self.padY, anchor = tkinter.SE)
+        self.root.update()
         self.date_box_label = tkinter.Label(self.root, width = 5, height = 1, text = "Dato:")
-        self.date_box_label.place(x = self.root.winfo_width() -self.padX -self.box_pad - 8*len(self.start_date)-2, y = self.root.winfo_height()-self.padY, anchor = tkinter.SE)
+        self.date_box_label.place(x = self.root.winfo_width() -self.padX -self.box_pad - self.date_box.winfo_width(), y = self.root.winfo_height()-self.padY, anchor = tkinter.SE)
 
         #time box
         self.time_box = tkinter.Text(self.root, width = 10, height = 1)
         self.time_box.insert('0.0', self.start_time)
         self.time_box.configure(state = "disabled")
-        self.time_box.place(x = self.root.winfo_width() -self.padX, y = self.root.winfo_height()-self.padY-self.box_pad-20, anchor = tkinter.SE)
+        self.time_box.place(x = self.root.winfo_width() -self.padX, y = self.root.winfo_height()-self.padY-self.box_pad-self.date_box.winfo_height(), anchor = tkinter.SE)
+        self.root.update()
         self.time_box_label = tkinter.Label(self.root, width = 5, height = 1, text = "Klokka:")
-        self.time_box_label.place(x = self.root.winfo_width() -self.padX -self.box_pad - 8*len(self.start_date)-2, y = self.root.winfo_height()-self.padY-self.box_pad-20, anchor = tkinter.SE)
+        self.time_box_label.place(x = self.root.winfo_width() -self.padX -self.box_pad - self.time_box.winfo_width(), y = self.root.winfo_height()-self.padY-self.box_pad-self.date_box.winfo_height(), anchor = tkinter.SE)
 
         #info canvas
         self.info = tkinter.Canvas(self.root, width = self.info_width, height = self.info_height)
         self.info.place(x = self.bg_map.width()+2*self.padX, y = self.padY, anchor = tkinter.NW)
 
+        #### info canvas initial content ####
+
+        #title
+        self.info_title = "Instruksjon"
+        self.info_title_box = tkinter.Label(self.info, width = 20, height = 1, text = self.info_title+" "*(20-len(self.info_title)))
+        self.info_title_box.config(font=("Courier", 26))
+        self.info_title_box.place(x=self.info_pad, y=self.info_pad, anchor = tkinter.NW)
+        self.root.update()
+        
+        #healthy
+        self.info_healthy_label = tkinter.Label(self.info, width = 10, height = 1, text = "Friske:   ")
+        self.info_healthy_label.config(font=("Courier", 16))
+        self.info_healthy_label.place(x = self.info_pad, y = self.info_pad + self.padY + self.info_title_box.winfo_height(), anchor = tkinter.NW)
+        self.root.update()
+
+        #infected
+        self.info_infected_label = tkinter.Label(self.info, width = 10, height = 1, text = "Syke:     ")
+        self.info_infected_label.config(font=("Courier", 16))
+        self.info_infected_label.place(x = self.info_pad, y = self.info_pad + 2*self.padY + self.info_title_box.winfo_height() + self.info_healthy_label.winfo_height(), anchor = tkinter.NW)
+        self.root.update()
+
+        #dead (karantene)
+        self.info_dead_label = tkinter.Label(self.info, width = 10, height = 1, text = "Karantene:")
+        self.info_dead_label.config(font=("Courier", 16))
+        self.info_dead_label.place(x = self.info_pad, y = self.info_pad + 3*self.padY + self.info_title_box.winfo_height() + 2*self.info_healthy_label.winfo_height(), anchor = tkinter.NW)
+        self.root.update()
+
+        #todo add numbers
+
+        #todo make a label display over the stats, with a tutorial message
+
+    #todo make function for initial infection to change the initial tutorial display
+
     def show(self):
         self.root.mainloop()
     
+def updateInfoScreen(win, room):
+    #todo change title, healthy, infected, dead
+    win.info_title = room.name
+    win.info_title_box.config(text = win.info_title)
+
 
 test = Window()
 test.show()
