@@ -12,6 +12,7 @@ from PIL import Image
 
 class Window():
 
+    # "global" variables
     graphicspath = "graphics/"
     bg_map_filename = graphicspath+"map.png"
     info_width = 300
@@ -132,11 +133,12 @@ class Window():
         
         #configure all buttons
         for room in self.rooms:
-            self.roomButtons[room.name].configure(image = btn_images[room.name], command = lambda room=room: updateInfoScreen(self, room), borderwidth = 0) 
+            self.roomButtons[room.name].configure(image = btn_images[room.name], command = lambda room=room: updateInfoScreen(self, room), borderwidth = 1, highlightthickness = 0) 
             # in the lambda command, room=room because otherwise all buttons point to the last
             self.roomButtons[room.name].image = btn_images[room.name] #these need to be stored becaused of garbage collection
-            self.roomButtons[room.name].place(x = room.coordinates[0], y = room.coordinates[1], anchor = tkinter.NW)
+            self.roomButtons[room.name].place(x = room.coordinates[0]-1, y = room.coordinates[1]-1, anchor = tkinter.NW)#-1 because of the 1px border
 
+        #### end of room buttons ####
             
 
     def show(self):
@@ -152,7 +154,7 @@ def updateInfoScreen(win, room):
     win.info_title.set(room.name)
     if len(room.name) > 12: #resize if text is too big
         win.info_title_label.config(font=("Courier", 37-len(room.name)))
-        
+
     else:
         win.info_title_label.config(font=("Courier", 26))
 
