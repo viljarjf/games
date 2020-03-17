@@ -55,7 +55,7 @@ class Window():
         self.time_box.insert('0.0', self.start_time)
         self.time_box.configure(state = "disabled")
         self.time_box.place(x = self.root.winfo_width() -self.padX, y = self.root.winfo_height()-self.padY-self.box_pad-self.date_box.winfo_height(), anchor = tkinter.SE)
-        self.root.update()
+        self.root.update() #updates are necessary for reading the widget size later
         self.time_box_label = tkinter.Label(self.root, width = 5, height = 1, text = "Klokka:")
         self.time_box_label.place(x = self.root.winfo_width() -self.padX -self.box_pad - self.time_box.winfo_width(), y = self.root.winfo_height()-self.padY-self.box_pad-self.date_box.winfo_height(), anchor = tkinter.SE)
 
@@ -66,44 +66,113 @@ class Window():
         #### info canvas initial content ####
 
         #title
-        self.info_title = "Instruksjon"
-        self.info_title_box = tkinter.Label(self.info, width = 20, height = 1, text = self.info_title+" "*(20-len(self.info_title)))
-        self.info_title_box.config(font=("Courier", 26))
-        self.info_title_box.place(x=self.info_pad, y=self.info_pad, anchor = tkinter.NW)
-        self.root.update()
+        self.info_title = tkinter.StringVar()
+        self.info_title.set("Instruksjon")
+        self.info_title_label = tkinter.Label(self.info, width = 20, height = 1, text = self.info_title, textvariable = self.info_title, anchor = tkinter.NW)
+        self.info_title_label.config(font=("Courier", 26))
+        self.info_title_label.place(x=self.info_pad, y=self.info_pad, anchor = tkinter.NW)
+        self.root.update() 
         
         #healthy
-        self.info_healthy_label = tkinter.Label(self.info, width = 10, height = 1, text = "Friske:   ")
+        self.info_healthy_label = tkinter.Label(self.info, width = 10, height = 1, text = "Friske:", anchor = tkinter.NW)
         self.info_healthy_label.config(font=("Courier", 16))
-        self.info_healthy_label.place(x = self.info_pad, y = self.info_pad + self.padY + self.info_title_box.winfo_height(), anchor = tkinter.NW)
+        healthy_y_pos = self.info_pad + self.padY + self.info_title_label.winfo_height()
+        self.info_healthy_label.place(x = self.info_pad, y = healthy_y_pos, anchor = tkinter.NW)
         self.root.update()
+        self.info_healthy_count = tkinter.Text(self.info, width = 4, height = 1)
+        self.info_healthy_count.insert('0.0', 0)
+        self.info_healthy_count.configure(state = "disabled")
+        self.info_healthy_count.place(x = self.info_width - self.info_pad, y = healthy_y_pos, anchor = tkinter.NE)
 
         #infected
-        self.info_infected_label = tkinter.Label(self.info, width = 10, height = 1, text = "Syke:     ")
+        self.info_infected_label = tkinter.Label(self.info, width = 10, height = 1, text = "Syke:", anchor = tkinter.NW)
         self.info_infected_label.config(font=("Courier", 16))
-        self.info_infected_label.place(x = self.info_pad, y = self.info_pad + 2*self.padY + self.info_title_box.winfo_height() + self.info_healthy_label.winfo_height(), anchor = tkinter.NW)
-        self.root.update()
+        infected_y_pos = self.info_pad + 2*self.padY + self.info_title_label.winfo_height() + self.info_healthy_label.winfo_height()
+        self.info_infected_label.place(x = self.info_pad, y = infected_y_pos, anchor = tkinter.NW)
+        self.info_infected_count = tkinter.Text(self.info, width = 4, height = 1)
+        self.info_infected_count.insert('0.0', 0)
+        self.info_infected_count.configure(state = "disabled")
+        self.info_infected_count.place(x = self.info_width - self.info_pad, y = infected_y_pos, anchor = tkinter.NE)
 
-        #dead (karantene)
-        self.info_dead_label = tkinter.Label(self.info, width = 10, height = 1, text = "Karantene:")
+        #dead
+        self.info_dead_label = tkinter.Label(self.info, width = 10, height = 1, text = "Karantene:", anchor = tkinter.NW)
         self.info_dead_label.config(font=("Courier", 16))
-        self.info_dead_label.place(x = self.info_pad, y = self.info_pad + 3*self.padY + self.info_title_box.winfo_height() + 2*self.info_healthy_label.winfo_height(), anchor = tkinter.NW)
-        self.root.update()
+        dead_y_pos = self.info_pad + 3*self.padY + self.info_title_label.winfo_height() + 2*self.info_healthy_label.winfo_height()
+        self.info_dead_label.place(x = self.info_pad, y = dead_y_pos, anchor = tkinter.NW)
+        self.info_dead_count = tkinter.Text(self.info, width = 4, height = 1)
+        self.info_dead_count.insert('0.0', 0)
+        self.info_dead_count.configure(state = "disabled")
+        self.info_dead_count.place(x = self.info_width - self.info_pad, y = dead_y_pos, anchor = tkinter.NE)
 
-        #todo add numbers
+        #tutorial text
+        tutorial_text = "Velkommen til Pest A.S \nMålet er å infisere alle rommene ved Realfagbygget.\nSpillet forutsetter generell kjennskap til rommene.\nKlikk på et rom for å begynne."
+        self.info_tutorial_label = tkinter.Label(self.info, width = 50, height = 10, text = tutorial_text, justify = tkinter.LEFT, anchor = tkinter.NW)
+        self.info_tutorial_label.place(x = self.info_pad, y = healthy_y_pos, anchor = tkinter.NW)
 
-        #todo make a label display over the stats, with a tutorial message
+        #### End of info section ####
 
-    #todo make function for initial infection to change the initial tutorial display
+
+
+        #### Room Buttons ####
+
+        #create buttons dict
+        self.roomButtons = dict()
+
+        #create button image dict
+        btn_images = dict()
+
+        #create command dict
+        command_dict = dict()
+
+        #fill the dicts
+        for room in self.rooms:
+            self.roomButtons[room.name] = tkinter.Button(self.bg)
+            btn_images[room.name] = tkinter.PhotoImage(file = self.graphicspath + room.name + ".png")
+            command_dict[room.name] = lambda: updateInfoScreen(self, room)
+        
+        #configure all buttons
+        for room in self.rooms:
+            self.roomButtons[room.name].configure(image = btn_images[room.name], command = lambda room=room: updateInfoScreen(self, room), borderwidth = 0) 
+            # in the lambda command, room=room because otherwise all buttons point to the last
+            self.roomButtons[room.name].image = btn_images[room.name] #these need to be stored becaused of garbage collection
+            self.roomButtons[room.name].place(x = room.coordinates[0], y = room.coordinates[1], anchor = tkinter.NW)
+
+            
 
     def show(self):
         self.root.mainloop()
     
 def updateInfoScreen(win, room):
-    #todo change title, healthy, infected, dead
-    win.info_title = room.name
-    win.info_title_box.config(text = win.info_title)
+    #first infection removed tutorial and infects 1 person
+    if win.info_tutorial_label.winfo_exists():
+        room.infect(1)
+        win.info_tutorial_label.destroy()
 
+    #change title text
+    win.info_title.set(room.name)
+    if len(room.name) > 12: #resize if text is too big
+        win.info_title_label.config(font=("Courier", 37-len(room.name)))
+        
+    else:
+        win.info_title_label.config(font=("Courier", 26))
+
+    #healthy
+    win.info_healthy_count.configure(state = "normal")
+    win.info_healthy_count.delete('0.0', tkinter.END)
+    win.info_healthy_count.insert('0.0', room.population.getHealthy())
+    win.info_healthy_count.configure(state = "disabled")
+
+    #infected
+    win.info_infected_count.configure(state = "normal")
+    win.info_infected_count.delete('0.0', tkinter.END)
+    win.info_infected_count.insert('0.0', room.population.getInfected())
+    win.info_infected_count.configure(state = "disabled")
+
+    #dead
+    win.info_dead_count.configure(state = "normal")
+    win.info_dead_count.delete('0.0', tkinter.END)
+    win.info_dead_count.insert('0.0', room.population.getDead())
+    win.info_dead_count.configure(state = "disabled")
 
 test = Window()
 test.show()
