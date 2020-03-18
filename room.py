@@ -18,12 +18,14 @@ class Room:
     #routes: list of route names and amount ([[A, 5], [B, 85], [C, 10]])
     #coords: x and y pos for top right corner ([100,150])
     #(relative to bg image)
-    def __init__(self, name, building,  population, routes, coords):
+    #desc: str, linebreaks every 27 chars
+    def __init__(self, name, building,  population, routes, coords, desc):
         self.name = name 
         self.building = building 
         self.population = Population(population) 
         self.routes = [] #list of routes  
         self.coordinates = coords 
+        self.desc = desc
 
         for room in routes:
             self.routes.append(Route(room[0], room[1])) #appends a new route to self.routes

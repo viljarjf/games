@@ -110,9 +110,17 @@ class Window():
         self.info_tutorial_label = tkinter.Label(self.info, width = 50, height = 10, text = tutorial_text, justify = tkinter.LEFT, anchor = tkinter.NW)
         self.info_tutorial_label.place(x = self.info_pad, y = healthy_y_pos, anchor = tkinter.NW)
 
+        #room info
+        self.info_room_info = tkinter.StringVar()
+        self.info_room_info.set("")
+        self.info_room_label = tkinter.Label(self.info, width = 40, height = 5, text = self.info_room_info, textvar = self.info_room_info, justify = tkinter.LEFT, anchor = tkinter.NW)
+        self.info_room_label.config(font=("Courier", 13))
+        room_info_pos = self.info_pad + 5*self.padY + self.info_title_label.winfo_height() + 3*self.info_healthy_label.winfo_height()
+        self.info_room_label.place(x = self.info_pad, y = room_info_pos, anchor = tkinter.NW)
+
         #### End of info section ####
 
-
+        
 
         #### Room Buttons ####
 
@@ -133,7 +141,8 @@ class Window():
         
         #configure all buttons
         for room in self.rooms:
-            self.roomButtons[room.name].configure(image = btn_images[room.name], command = lambda room=room: updateInfoScreen(self, room), borderwidth = 1, highlightthickness = 0) 
+            self.roomButtons[room.name].configure(image = btn_images[room.name], command = lambda room=room: updateInfoScreen(self, room))
+            self.roomButtons[room.name].configure(borderwidth = 1, highlightthickness = 0) #make the button look better
             # in the lambda command, room=room because otherwise all buttons point to the last
             self.roomButtons[room.name].image = btn_images[room.name] #these need to be stored becaused of garbage collection
             self.roomButtons[room.name].place(x = room.coordinates[0]-1, y = room.coordinates[1]-1, anchor = tkinter.NW)#-1 because of the 1px border
@@ -175,6 +184,9 @@ def updateInfoScreen(win, room):
     win.info_dead_count.delete('0.0', tkinter.END)
     win.info_dead_count.insert('0.0', room.population.getDead())
     win.info_dead_count.configure(state = "disabled")
+
+    #info
+    win.info_room_info.set(room.desc)
 
 test = Window()
 test.show()
