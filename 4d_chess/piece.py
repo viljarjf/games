@@ -12,7 +12,7 @@ class Piece:
             4: Bishop
             5: Queen
             6: King
-            
+
         color (int): Color of the piece
             -1: None
             0: Black
@@ -27,7 +27,7 @@ class Piece:
         self._value = None
         self._color = -1
 
-    def set_from_str(self, value: str, color = -1):
+    def set_from_str(self, value: str, color: int):
 
         names = [None, "Pawn", "Tower", "Rook", "Bishop", "Queen", "King"]
         
@@ -36,12 +36,12 @@ class Piece:
         else:
             self._val = value
 
-        if color not in [-1, 0, 1]:
+        if color not in [0, 1]:
             raise IndexError(f"{color} not a valid color. Choose 0 or 1.")
         
         self._color = color
     
-    def set_from_int(self, value: int, color = -1):
+    def set_from_int(self, value: int, color: int):
 
         names = [None, "Pawn", "Tower", "Rook", "Bishop", "Queen", "King"]
 
@@ -50,7 +50,7 @@ class Piece:
         else: 
             self._val = names[value]
         
-        if color not in [-1, 0, 1]:
+        if color not in [0, 1]:
             raise IndexError(f"{color} not a valid color. Choose 0 or 1.")
         
         self._color = color
@@ -64,3 +64,8 @@ class Piece:
         elif self._color == 0:
             return "black"
         return "white"
+
+if __name__ == "__main__":
+    p = Piece()
+    p.set_empty()
+    p.set_from_int(1, 1)
