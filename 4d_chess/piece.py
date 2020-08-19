@@ -21,14 +21,12 @@ class Piece:
     def __init__(self):
         self._value = None
         self._color = -1
-        self._is_set = False
     
     def set_empty(self):
-        self._is_set = True
+        self._value = None
+        self._color = -1
 
     def set_from_str(self, value: str, color = -1):
-        if self._is_set:
-            return
 
         names = [None, "Pawn", "Tower", "Rook", "Bishop", "Queen", "King"]
         
@@ -44,8 +42,6 @@ class Piece:
         self._is_set = True
     
     def set_from_int(self, value: int, color = -1):
-        if self._is_set:
-            return
 
         names = [None, "Pawn", "Tower", "Rook", "Bishop", "Queen", "King"]
 
