@@ -11,5 +11,3 @@ class Board:
             board = [board]*dimension
         
         self._tiles = board
-
-        
