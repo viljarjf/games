@@ -12,6 +12,7 @@ class Piece:
             4: Bishop
             5: Queen
             6: King
+            
         color (int): Color of the piece
             -1: None
             0: Black
@@ -39,7 +40,6 @@ class Piece:
             raise IndexError(f"{color} not a valid color. Choose 0 or 1.")
         
         self._color = color
-        self._is_set = True
     
     def set_from_int(self, value: int, color = -1):
 
@@ -54,16 +54,11 @@ class Piece:
             raise IndexError(f"{color} not a valid color. Choose 0 or 1.")
         
         self._color = color
-        self._is_set = True
 
     def get_value(self)-> str:
-        if not self._is_set:
-            raise Exception("Piece not set yet")
         return self._val
     
     def get_color(self)-> str:
-        if not self._is_set:
-            raise Exception("Piece not set yet")
         if self._color == -1:
             return None
         elif self._color == 0:
