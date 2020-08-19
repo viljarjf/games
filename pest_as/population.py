@@ -30,3 +30,19 @@ class Population:
     
     def isDead(self):
         return self.__dead == self.__total
+
+    def getFractionInfected(self):
+        if self.__dead != self.__total:
+            return self.__healthy/(self.__total-self.__dead)
+        return 0
+
+    def infect(self, amount):
+        if self.__healthy == 0:
+            return
+        elif self.__infected+amount <= self.__healthy:
+            self.__infected += amount
+            self.__healthy -= amount
+        else:
+            self.__healthy = 0
+            self.__infected = self.__total-self.__dead
+        
