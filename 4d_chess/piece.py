@@ -18,7 +18,17 @@ class Piece:
             1: White
     """
 
-    def __init__(self, value: str, color = -1):
+    def __init__(self):
+        self._value = None
+        self._color = -1
+        self._is_set = False
+    
+    def set_empty(self):
+        self._is_set = True
+
+    def set_from_str(self, value: str, color = -1):
+        if self._is_set:
+            return
 
         names = [None, "Pawn", "Tower", "Rook", "Bishop", "Queen", "King"]
         
@@ -31,8 +41,11 @@ class Piece:
             raise IndexError(f"{color} not a valid color. Choose 0 or 1.")
         
         self._color = color
+        self._is_set = True
     
-    def __init__(self, value: int, color = -1):
+    def set_from_int(self, value: int, color = -1):
+        if self._is_set:
+            return
 
         names = [None, "Pawn", "Tower", "Rook", "Bishop", "Queen", "King"]
 
@@ -45,12 +58,16 @@ class Piece:
             raise IndexError(f"{color} not a valid color. Choose 0 or 1.")
         
         self._color = color
-    
+        self._is_set = True
 
     def get_value(self)-> str:
+        if not self._is_set:
+            raise Exception("Piece not set yet")
         return self._val
     
     def get_color(self)-> str:
+        if not self._is_set:
+            raise Exception("Piece not set yet")
         if self._color == -1:
             return None
         elif self._color == 0:
