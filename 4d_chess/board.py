@@ -67,6 +67,13 @@ class Board:
         # same team
         if  p_start.get_color() == p_end.get_color():
             return False
-              
-        self.set_tile(end, p_start)
-        self.set_tile(start, Piece())
+
+        tmp_board = copy.deepcopy(self._tiles) 
+
+        if(self.set_tile(end, p_start)):
+            if(self.set_tile(start, Piece())):
+                return True
+                
+        # this only executes if the move fails
+        self._tiles = tmp_board
+        return False
