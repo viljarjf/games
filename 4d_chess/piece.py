@@ -1,3 +1,4 @@
+import copy
 ### Chess pieces
 
 class Piece:
@@ -56,7 +57,7 @@ class Piece:
         self._color = color
 
     def get_value(self)-> str:
-        return self._val
+        return copy.copy(self._val)
     
     def get_color(self)-> str:
         if self._color == -1:
@@ -64,8 +65,3 @@ class Piece:
         elif self._color == 0:
             return "black"
         return "white"
-
-if __name__ == "__main__":
-    p = Piece()
-    p.set_empty()
-    p.set_from_int(1, 1)
