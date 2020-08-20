@@ -6,11 +6,15 @@ import numpy
 ### Chess board
 class Board:
     
-    def __init__(self, dimension):
+    def __init__(self, dimension, board_size):
         self._dim = dimension
+        self._size = board_size
 
-        board = [Tile()]
-        for n in range(dimension):
+        board = []
+        for i in range(board_size):
+            board.append(Tile())
+
+        for j in range(dimension):
             board = [board]*dimension
         
         self._tiles = numpy.array(board)
@@ -73,7 +77,7 @@ class Board:
         if(self.set_tile(end, p_start)):
             if(self.set_tile(start, Piece())):
                 return True
-                
+
         # this only executes if the move fails
         self._tiles = tmp_board
         return False
