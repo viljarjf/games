@@ -64,8 +64,3 @@ class Piece:
         elif self._color == 0:
             return "black"
         return "white"
-
-if __name__ == "__main__":
-    p = Piece()
-    p.set_empty()
-    p.set_from_int(1, 1)

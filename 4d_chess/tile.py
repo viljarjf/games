@@ -1,4 +1,6 @@
 from piece import Piece
+
+import copy
 ### Chess tile
 
 class Tile:
@@ -21,7 +23,7 @@ class Tile:
             raise Exception("Not a valid piece")
         
     def get_piece(self)-> Piece:
-        return self._piece
+        return copy.copy(self._piece)
     
     def set_piece(self, value, color = -1):
         try: 
