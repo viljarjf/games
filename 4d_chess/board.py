@@ -27,7 +27,7 @@ class Board:
             raise IndexError(f"Wrong axis amount in pos, \"{len(pos)}\". Must be exactly {self._dim}.")
 
         for n in pos:
-            if n > self._dim or n < 0:
+            if n > self._size or n < 0:
                 raise IndexError("Tile position out of bounds")
 
         return l[pos]
