@@ -10,14 +10,11 @@ class Board:
         self._dim = dimension
         self._size = board_size
 
-        board = []
-        for i in range(board_size):
-            board.append(Tile())
+        shape = [self._size] * self._dim
+        board = [Tile() for n in numpy.zeros(shape).flatten()]
 
-        for j in range(dimension):
-            board = [board]*dimension
         
-        self._tiles = numpy.array(board)
+        self._tiles = numpy.array(board).reshape(shape)
     
     def get_tile(self, pos: tuple)-> Tile:
         l = copy.deepcopy(self._tiles) 
@@ -46,7 +43,7 @@ class Board:
             # check if the position is valid
             self.get_tile(pos)
 
-            self._tiles[pos] = Piece
+            self._tiles[pos].set_piece(piece)
             return True
         except:
             return False

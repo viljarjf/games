@@ -20,11 +20,11 @@ class Piece:
     """
 
     def __init__(self):
-        self._value = None
+        self._val = None
         self._color = -1
     
     def set_empty(self):
-        self._value = None
+        self._val = None
         self._color = -1
 
     def set_from_str(self, value: str, color: int):

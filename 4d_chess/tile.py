@@ -21,21 +21,16 @@ class Tile:
                 raise TypeError(f"\"value\" must be either str, int or Nonetype, not {type(value)}")
         except:
             raise Exception("Not a valid piece")
+
+        self._id = None
         
     def get_piece(self)-> Piece:
         return copy.copy(self._piece)
     
-    def set_piece(self, value, color = -1):
-        try: 
-            if type(value) == str:
-                self._piece.set_from_str(value, color)
-            elif type(value) == int:
-                self._piece.set_from_int(value, color)
-            else:
-                raise TypeError(f"\"value\" must be either str or int, not {type(value)}")
-        except:
-            raise Exception("Not a valid piece")
+    def set_piece(self, piece: Piece):
+        self._piece = piece
     
     def clear(self):
         self._piece.set_empty()
+    
 
