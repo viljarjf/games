@@ -2,7 +2,7 @@ from tile import Tile
 from piece import Piece
 
 import copy
-import numpy
+import numpy as np
 ### Chess board
 class Board:
     
@@ -11,10 +11,10 @@ class Board:
         self._size = board_size
 
         shape = [self._size] * self._dim
-        board = [Tile() for n in numpy.zeros(shape).flatten()]
+        board = [Tile() for n in np.zeros(shape).flatten()]
 
         
-        self._tiles = numpy.array(board).reshape(shape)
+        self._tiles = np.array(board).reshape(shape)
     
     def get_tile(self, pos: tuple)-> Tile:
         l = copy.deepcopy(self._tiles) 

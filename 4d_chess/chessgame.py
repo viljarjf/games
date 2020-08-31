@@ -1,9 +1,11 @@
 from board import Board
 from tile import Tile
 from piece import Piece
+import move
 
 import tkinter as tk
-import numpy
+import numpy as np
+from PIL import Image, ImageTk, ImageColor
 
 class ChessGame:
     # Hard-coded dim = 4
@@ -17,14 +19,16 @@ class ChessGame:
     }
     dimension = 4
     board_size = 4
+    move.set_vars(dimension, board_size)
 
     def __init__(self, corner, sidelength):
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
         self._can_click = True
         self._turn = 1
+        self._overlay_ids = []
 
         shape = [self.board_size] * self.dimension
-        self._id_board = numpy.array([None for n in numpy.zeros(shape).flatten()]).reshape(shape)
+        self._id_board = np.array([None for n in np.zeros(shape).flatten()]).reshape(shape)
 
         self._root = tk.Tk()
         self._root.geometry(f"{sidelength}x{sidelength}+{corner[1]}+{corner[0]}")
@@ -43,11 +47,19 @@ class ChessGame:
                     )
         self._canvas.pack()
 
+
+        fill = ImageColor.getrgb(self.colors["selected"]) + (150,)
+        image = Image.new('RGBA', (self._tile_size, self._tile_size), fill)
+        self._overlay_image = ImageTk.PhotoImage(image)
+
         self.draw_all(redraw = True)
                         
 
         def on_click(event)-> None:
             x, y = event.x, event.y
+
+            for id in self._overlay_ids:
+                self._canvas.delete(id)
 
             x_o = (x- self.pad) / (self._tile_size * self.board_size + self.pad)
             if x_o - int(x_o) > (self._tile_size * self.board_size) / (self._tile_size * self.board_size + self.pad):
@@ -75,6 +87,12 @@ class ChessGame:
                     self._turn += 1
                     self._turn %= 2
 
+            cur_piece = self._board.get_tile(clickpos).get_piece()
+            legal_moves = move.get_legal_moves(cur_piece, clickpos)       
+            
+            for pos in legal_moves:
+                y0, x0 = self.pixel_from_pos(pos) 
+                self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
             
 
         self._canvas.bind("<Button-1>", on_click)
@@ -125,8 +143,9 @@ class ChessGame:
                             continue
                         c = p.get_color()
                         p = None
-                        x = (self.pad + self.board_size * self._tile_size) * x_o + self._tile_size * x_i + 2 * self._piece_pad
-                        y = (self.pad + self.board_size * self._tile_size) * y_o + self._tile_size * y_i + 2 * self._piece_pad
+                        y, x = self.pixel_from_pos(pos)
+                        x += 2 * self._piece_pad
+                        y += 2 * self._piece_pad
                         self._canvas.create_oval(
                             x,
                             y,
@@ -136,7 +155,6 @@ class ChessGame:
                         )
     
     def draw_tile(self, pos)-> bool:
-        (x_o, y_o, x_i, y_i) = pos
         t = self._board.get_tile(pos)
         try:
             id = self._id_board[pos]
@@ -147,16 +165,23 @@ class ChessGame:
                 return False
             c = p.get_color()
             p = None
-            x = (self.pad + self.board_size * self._tile_size) * x_o + self._tile_size * x_i + 2 * self._piece_pad
-            y = (self.pad + self.board_size * self._tile_size) * y_o + self._tile_size * y_i + 2 * self._piece_pad
+            y, x = self.pixel_from_pos(pos)
+            x += self._piece_pad
+            y += self._piece_pad
             self._id_board[pos] = self._canvas.create_oval(
                 x,
                 y,
-                x + self._tile_size - 2 *self._piece_pad,
-                y + self._tile_size - 2 *self._piece_pad,
+                x + self._tile_size - 2 * self._piece_pad,
+                y + self._tile_size - 2 * self._piece_pad,
                 fill = self.colors[c]
             )
             return True
+    
+    def pixel_from_pos(self, pos)-> tuple:
+        (x_o, y_o, x_i, y_i) = pos
+        x = (self.pad + self.board_size * self._tile_size) * x_o + self._tile_size * x_i + self.pad
+        y = (self.pad + self.board_size * self._tile_size) * y_o + self._tile_size * y_i + self.pad
+        return (y, x)
 
     def toggle_click(self):
         self._can_click = (not self._can_click)
