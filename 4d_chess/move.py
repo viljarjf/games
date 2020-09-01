@@ -1,4 +1,6 @@
 from piece import Piece
+import copy
+import random
 
 _dimension = None
 _board_size = None
@@ -14,6 +16,15 @@ def get_legal_moves(piece: Piece, pos: tuple)-> list:
         raise Exception("Dimension and board size not set. Please do so with move.set_vars")
     if piece.get_value() == "Pawn":
         moves = _pawn(pos, piece.get_color())
+        return moves
+    elif piece.get_value() == "King":
+        moves = _king(pos, piece.get_color())
+        return moves
+    elif piece.get_value() == "Knight":
+        moves = _knight(pos, piece.get_color())
+        return moves
+    elif piece.get_value() == "SuperQueen":
+        moves = _superqueen(pos, piece.get_color())
         return moves
 
 def _pawn(pos: tuple, color: int)-> list:
@@ -31,4 +42,90 @@ def _pawn(pos: tuple, color: int)-> list:
                     if None in move:
                         continue
                     legal_moves.append(move)
+    return legal_moves
+
+def _king(pos: tuple, color: int)-> list:
+    legal_moves = []
+    # outer loop sets up +/- 1 for each dimension, but only for one dim at a time
+    for d in range(_dimension):
+        for i_1, p_1 in enumerate(pos):
+            if p_1+1 < _dimension:
+                # changed to list, to enable item assignment
+                move = list(copy.copy(pos))
+                move[i_1] += 1
+                # inner loop does the same as outer loop, but skips the dimension already used
+                for i_2, p_2 in enumerate(move):
+                    if i_2 == i_1:
+                        continue
+                    if p_2+1 < _dimension:
+                        finalmove = copy.copy(move)
+                        finalmove[i_2] += 1
+                        # change back to tuple, so we can remove dulpicates in the end
+                        legal_moves.append(tuple(finalmove))
+                    if p_2-1 > -1:
+                        finalmove = copy.copy(move)
+                        finalmove[i_2] -= 1
+                        legal_moves.append(tuple(finalmove))
+                # also add the case of only choosing one dim
+                legal_moves.append(tuple(move))
+            if p_1-1 > -1:
+                move = list(copy.copy(pos))
+                move[i_1] -= 1
+                for i_2, p_2 in enumerate(move):
+                    if i_2 == i_1:
+                        continue
+                    if p_2+1 < _dimension:
+                        finalmove = copy.copy(move)
+                        finalmove[i_2] += 1
+                        legal_moves.append(tuple(finalmove))
+                    if p_2-1 > -1:
+                        finalmove = copy.copy(move)
+                        finalmove[i_2] -= 1
+                        legal_moves.append(tuple(finalmove))
+                legal_moves.append(tuple(move))
+            # remove duplicates. This keeps the overlay from turning opaque when a tile has many possible ways to get to
+    return list(set(legal_moves))
+
+def _knight(pos: tuple, color: int)-> list:
+    legal_moves = []
+    for d in range(_dimension):
+        for i_1, p_1 in enumerate(pos):
+                if p_1+2 < _dimension:
+                    # changed to list, to enable item assignment
+                    move = list(copy.copy(pos))
+                    move[i_1] += 2
+                    # inner loop does the same as outer loop, but skips the dimension already used
+                    for i_2, p_2 in enumerate(move):
+                        if i_2 == i_1:
+                            continue
+                        if p_2+1 < _dimension:
+                            finalmove = copy.copy(move)
+                            finalmove[i_2] += 1
+                            # change back to tuple, so we can remove dulpicates in the end
+                            legal_moves.append(tuple(finalmove))
+                        if p_2-1 > -1:
+                            finalmove = copy.copy(move)
+                            finalmove[i_2] -= 1
+                            legal_moves.append(tuple(finalmove))
+                if p_1-2 > -1:
+                    move = list(copy.copy(pos))
+                    move[i_1] -= 2
+                    for i_2, p_2 in enumerate(move):
+                        if i_2 == i_1:
+                            continue
+                        if p_2+1 < _dimension:
+                            finalmove = copy.copy(move)
+                            finalmove[i_2] += 1
+                            legal_moves.append(tuple(finalmove))
+                        if p_2-1 > -1:
+                            finalmove = copy.copy(move)
+                            finalmove[i_2] -= 1
+                            legal_moves.append(tuple(finalmove))
+            # remove duplicates. This keeps the overlay from turning opaque when a tile has many possible ways to get to
+    return list(set(legal_moves))
+
+def _superqueen(pos: tuple, color: int)-> list:
+    legal_moves = []
+    for p in range(random.randint(1, 20)):
+        legal_moves.append(tuple([random.randint(0, 3) for d in range(_dimension)]))
     return legal_moves

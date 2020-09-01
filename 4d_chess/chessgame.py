@@ -48,7 +48,7 @@ class ChessGame:
         self._canvas.pack()
 
 
-        fill = ImageColor.getrgb(self.colors["selected"]) + (150,)
+        fill = ImageColor.getrgb(self.colors["selected"]) + (270,)
         image = Image.new('RGBA', (self._tile_size, self._tile_size), fill)
         self._overlay_image = ImageTk.PhotoImage(image)
 
@@ -81,7 +81,8 @@ class ChessGame:
             
             clickpos = (x_o, y_o, x_i, y_i)
             piece = Piece()
-            piece.set_from_str("Pawn", self._turn)
+            #piece.set_from_str("SuperQueen", self._turn)
+            piece.set_from_int(69, self._turn)
             if self._board.set_tile(clickpos, piece):
                 if(self.draw_tile(clickpos)):
                     self._turn += 1

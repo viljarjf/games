@@ -7,11 +7,12 @@ class Piece:
         value (int or str): Type of chess piece. 
             0: None
             1: Pawn
-            2: Tower
+            2: Knight
             3: Rook
             4: Bishop
             5: Queen
             6: King
+            69: SuperQueen
 
         color (int): Color of the piece
             -1: None
@@ -29,7 +30,7 @@ class Piece:
 
     def set_from_str(self, value: str, color: int):
 
-        names = [None, "Pawn", "Tower", "Rook", "Bishop", "Queen", "King"]
+        names = [None, "Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "SuperQueen"]
         
         if value.capitalize() not in names:
             raise IndexError(f"{value} is not a valid piece. Accepted values are 0 to 6")
@@ -43,10 +44,13 @@ class Piece:
     
     def set_from_int(self, value: int, color: int):
 
-        names = [None, "Pawn", "Tower", "Rook", "Bishop", "Queen", "King"]
+        names = [None, "Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "SuperQueen"]
 
         if value > 6 or value < 0:
-            raise IndexError(f"{value} is not a valid piece. Accepted values are 0 to 6")
+            if value == 69:
+                self._val = "SuperQueen"
+            else:
+                raise IndexError(f"{value} is not a valid piece. Accepted values are 0 to 6")
         else: 
             self._val = names[value]
         
