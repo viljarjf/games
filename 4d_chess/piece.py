@@ -25,10 +25,21 @@ class Piece:
         self._color = -1
     
     def set_empty(self):
+        """Set a piece to be empty
+        """
         self._val = None
         self._color = -1
 
     def set_from_str(self, value: str, color: int):
+        """Set a piece from a string. Accepts capitilasation
+
+        Args:
+            value (str): Chess piece name, for example "Queen" or "rook"
+            color (int): Piece color, 1 for white and 0 for black
+
+        Raises:
+            IndexError: If the piece is invalid, either from invalid value or color
+        """
 
         names = [None, "Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "SuperQueen"]
         
@@ -43,7 +54,15 @@ class Piece:
         self._color = color
     
     def set_from_int(self, value: int, color: int):
+        """Set a piece from a int. See the class doc for int/value pairs
 
+        Args:
+            value (int): Chess piece value. See the class doc for more information
+            color (int): Piece color, 1 for white and 0 for black
+
+        Raises:
+            IndexError: If the piece is invalid, either from invalid value or color
+        """
         names = [None, "Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "SuperQueen"]
 
         if value > 6 or value < 0:
@@ -60,9 +79,17 @@ class Piece:
         self._color = color
 
     def get_value(self)-> str:
+        """
+        Returns:
+            str: String name of the piece
+        """
         return self._val
     
     def get_color(self)-> str:
+        """
+        Returns:
+            str: uncapitalised string of the piece's color
+        """
         if self._color == -1:
             return None
         elif self._color == 0:

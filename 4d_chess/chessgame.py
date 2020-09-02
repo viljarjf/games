@@ -7,16 +7,26 @@ import tkinter as tk
 import numpy as np
 from PIL import Image, ImageTk, ImageColor
 
-class ChessGame:
-    # Hard-coded dim = 4
+class FourDimChess:
+    """4D Chess
 
+    Call self.start() to play.
+
+    Args:
+        corner (tuple): (x, y) pixel coordinates for top left corner of the game
+        sidelength (int): Height and width of the game board, in pixels
+
+    """
+    
     colors = {
         "brown": "#d87d29",
         "light_brown": "#fdc47c",
         "selected": "#90e048",
+        "transparency": 0.7,
         "black": "#000000",
         "white": "#ffffff"
     }
+    # Hard-coded dim = 4
     dimension = 4
     board_size = 4
     move.set_vars(dimension, board_size)
@@ -48,7 +58,7 @@ class ChessGame:
         self._canvas.pack()
 
 
-        fill = ImageColor.getrgb(self.colors["selected"]) + (270,)
+        fill = ImageColor.getrgb(self.colors["selected"]) + (int(self.colors["transparency"]*255),)
         image = Image.new('RGBA', (self._tile_size, self._tile_size), fill)
         self._overlay_image = ImageTk.PhotoImage(image)
 
@@ -56,6 +66,17 @@ class ChessGame:
                         
 
         def on_click(event)-> None:
+            """This function runs on every click. DO NOT CALL ELSEWHERE
+
+            At the testing stage, this creates a piece on the selected tile, draws it, and shows all possible moves.
+            When complete, this should handle all logic for moving pieces
+
+            Args:
+                event (tkinter.Event): tkinter handles this. I don't know how or what
+
+            Returns:
+                None
+            """
             x, y = event.x, event.y
 
             for id in self._overlay_ids:
@@ -81,8 +102,7 @@ class ChessGame:
             
             clickpos = (x_o, y_o, x_i, y_i)
             piece = Piece()
-            #piece.set_from_str("SuperQueen", self._turn)
-            piece.set_from_int(69, self._turn)
+            piece.set_from_str("Rook", self._turn)
             if self._board.set_tile(clickpos, piece):
                 if(self.draw_tile(clickpos)):
                     self._turn += 1
@@ -95,10 +115,16 @@ class ChessGame:
                 y0, x0 = self.pixel_from_pos(pos) 
                 self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
             
-
+        # Bind the left click to the on_click function
         self._canvas.bind("<Button-1>", on_click)
     
     def draw_all(self, redraw = False):
+        """ 
+        Draw the tiles and pieces on the board
+
+        Args:
+            redraw (bool, optional): Delete all graphics from memory and redraw them. Defaults to False.
+        """
         if redraw:
             self._canvas.delete("all")
             # draw tiles
@@ -156,6 +182,16 @@ class ChessGame:
                         )
     
     def draw_tile(self, pos)-> bool:
+        """Redraw a single tile's piece
+
+        Args:
+            pos (tuple):    (x_o, y_o, x_i, y_i), 4D coordinates for the tile. 
+                            o-subscript refers to "outer", meaning position of the boards
+                            i_subscript refers to "inner", meaning position on a single 2D board 
+
+        Returns:
+            bool: Success state
+        """ 
         t = self._board.get_tile(pos)
         try:
             id = self._id_board[pos]
@@ -179,16 +215,30 @@ class ChessGame:
             return True
     
     def pixel_from_pos(self, pos)-> tuple:
+        """Get 2D pixel coordinates from 4D position.
+        Specifically, get the (y, x) coordinates of the top left corner of the tile
+
+        Args:
+            pos (tuple):    (x_o, y_o, x_i, y_i), 4D coordinates for the tile. 
+                            o-subscript refers to "outer", meaning position of the boards
+                            i_subscript refers to "inner", meaning position on a single 2D board
+
+        Returns:
+            tuple: (y, x), pixel coordinates of top left corner to the position
+        """
         (x_o, y_o, x_i, y_i) = pos
         x = (self.pad + self.board_size * self._tile_size) * x_o + self._tile_size * x_i + self.pad
         y = (self.pad + self.board_size * self._tile_size) * y_o + self._tile_size * y_i + self.pad
         return (y, x)
 
     def toggle_click(self):
+        """Toggle wether the on_click function should run on clicks
+        """
         self._can_click = (not self._can_click)
 
     def start(self):
-
+        """Run the game. This halts all code after the call, untill the game window is closed.
+        """
         self._root.mainloop()
 
     
