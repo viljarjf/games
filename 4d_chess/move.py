@@ -37,6 +37,12 @@ class Move:
         elif piece.get_value() == "Rook":
             moves = self._rook(pos, piece.get_color())
             return moves
+        elif piece.get_value() == "Bishop":
+            moves = self._bishop(pos, piece.get_color())
+            return moves
+        elif piece.get_value() == "Queen":
+            moves = self._queen(pos, piece.get_color())
+            return moves
         elif piece.get_value() == "SuperQueen":
             moves = self._superqueen(pos, piece.get_color())
             return moves
@@ -154,3 +160,35 @@ class Move:
                 move[direcion] = i
                 legal_moves.append(tuple(move))
         return list(set(legal_moves))
+    
+    def _bishop(self, pos: tuple, color: int)-> list:
+        legal_moves = []
+        # first, set up a loop over two dimensions at a time
+        for dim in range(self._dimension):
+            for index in range(self._dimension):
+                if index == dim: 
+                    continue
+                # then, add all moves with those two dimensions + n for n < _board_size
+                # actually, loop from -board size to board_size, but remove illegal positions
+                # also loop the sign of one of the dimensions, to get both diagonals
+                for sign in range(-1, 2, 2):
+                    for n in range(-self._board_size, self._board_size):
+                        move = list(copy.copy(pos))
+                        move[dim] += n
+                        move[index] += n * sign
+                        # range-check
+                        is_legal = True
+                        for x in move:
+                            if x >= self._board_size or x < 0:
+                                is_legal = False
+                                break
+                        if is_legal:
+                            legal_moves.append(tuple(move))
+
+        return list(set(legal_moves))
+    def _queen(self, pos: tuple, color: int)-> list:
+        # a queen is a rook and a bishop combined
+        legal_moves = []
+        legal_moves += self._rook(pos, color)
+        legal_moves += self._bishop(pos, color)
+        return list(set([tuple(move) for move in legal_moves]))
