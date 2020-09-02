@@ -23,6 +23,9 @@ def get_legal_moves(piece: Piece, pos: tuple)-> list:
     elif piece.get_value() == "Knight":
         moves = _knight(pos, piece.get_color())
         return moves
+    elif piece.get_value() == "Rook":
+        moves = _rook(pos, piece.get_color())
+        return moves
     elif piece.get_value() == "SuperQueen":
         moves = _superqueen(pos, piece.get_color())
         return moves
@@ -129,3 +132,14 @@ def _superqueen(pos: tuple, color: int)-> list:
     for p in range(random.randint(1, 20)):
         legal_moves.append(tuple([random.randint(0, 3) for d in range(_dimension)]))
     return legal_moves
+
+def _rook(pos: tuple, color: int)-> list:
+    legal_moves = []
+    # loop through all dimensions
+    for direcion in range(_dimension):
+        # for every dim, append all tiles in that direction
+        for i in range(_board_size):
+            move = list(copy.copy(pos))
+            move[direcion] = i
+            legal_moves.append(tuple(move))
+    return list(set(legal_moves))
