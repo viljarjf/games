@@ -1,7 +1,7 @@
 from board import Board
 from tile import Tile
 from piece import Piece
-import move
+from move import Move
 
 import tkinter as tk
 import numpy as np
@@ -29,13 +29,13 @@ class FourDimChess:
     # Hard-coded dim = 4
     dimension = 4
     board_size = 4
-    move.set_vars(dimension, board_size)
 
     def __init__(self, corner, sidelength):
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
         self._can_click = True
         self._turn = 1
         self._overlay_ids = []
+        self._move = Move(self.dimension, self.board_size)
 
         shape = [self.board_size] * self.dimension
         self._id_board = np.array([None for n in np.zeros(shape).flatten()]).reshape(shape)
@@ -109,7 +109,7 @@ class FourDimChess:
                     self._turn %= 2
 
             cur_piece = self._board.get_tile(clickpos).get_piece()
-            legal_moves = move.get_legal_moves(cur_piece, clickpos)       
+            legal_moves = self._move.get_legal_moves(cur_piece, clickpos)       
             
             for pos in legal_moves:
                 y0, x0 = self.pixel_from_pos(pos) 
