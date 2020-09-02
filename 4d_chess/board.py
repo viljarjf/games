@@ -20,7 +20,6 @@ class Board:
 
         shape = [self._size] * self._dim
         board = [Tile() for n in np.zeros(shape).flatten()]
-
         
         self._tiles = np.array(board).reshape(shape)
     
@@ -35,8 +34,6 @@ class Board:
         Returns:
             Tile: Copy of the tile at the given position
         """
-        l = copy.deepcopy(self._tiles) 
-        # deep copy, we are updating l and don't want to change _tiles
 
         if len(pos) != self._dim:
             raise IndexError(f"Wrong axis amount in pos, \"{len(pos)}\". Must be exactly {self._dim}.")
@@ -45,7 +42,7 @@ class Board:
             if n > self._size or n < 0:
                 raise IndexError("Tile position out of bounds")
 
-        return l[pos]
+        return copy.copy(self._tiles[pos])
     
     def set_tile(self, pos: tuple, piece: Piece)-> bool:
         """Set a tile to contain a new piece

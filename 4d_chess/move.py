@@ -110,7 +110,7 @@ class Move:
         legal_moves = []
         for d in range(self._dimension):
             for i_1, p_1 in enumerate(pos):
-                    if p_1+2 < self._dimension:
+                    if p_1+2 < self._board_size:
                         # changed to list, to enable item assignment
                         move = list(copy.copy(pos))
                         move[i_1] += 2
@@ -118,7 +118,7 @@ class Move:
                         for i_2, p_2 in enumerate(move):
                             if i_2 == i_1:
                                 continue
-                            if p_2+1 < self._dimension:
+                            if p_2+1 < self._board_size:
                                 finalmove = copy.copy(move)
                                 finalmove[i_2] += 1
                                 # change back to tuple, so we can remove dulpicates in the end
@@ -133,7 +133,7 @@ class Move:
                         for i_2, p_2 in enumerate(move):
                             if i_2 == i_1:
                                 continue
-                            if p_2+1 < self._dimension:
+                            if p_2+1 < self._board_size:
                                 finalmove = copy.copy(move)
                                 finalmove[i_2] += 1
                                 legal_moves.append(tuple(finalmove))

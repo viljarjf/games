@@ -15,6 +15,8 @@ class FourDimChess:
     Args:
         corner (tuple): (x, y) pixel coordinates for top left corner of the game
         sidelength (int): Height and width of the game board, in pixels
+        board_size (int, optional): Size of the 2D boards. In standard 2D chess, board_size = 8. 
+                                    Defaults to 4.
 
     """
     
@@ -22,15 +24,15 @@ class FourDimChess:
         "brown": "#d87d29",
         "light_brown": "#fdc47c",
         "selected": "#90e048",
-        "transparency": 0.7,
+        "transparency": 0.8,
         "black": "#000000",
         "white": "#ffffff"
     }
     # Hard-coded dim = 4
     dimension = 4
-    board_size = 4
 
-    def __init__(self, corner, sidelength):
+    def __init__(self, corner, sidelength, board_size = 4):
+        self.board_size = board_size
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
         self._can_click = True
         self._turn = 1
@@ -47,8 +49,8 @@ class FourDimChess:
         self._height = sidelength
         self._width = sidelength
         self.pad = 10
-        self._piece_pad = 10
-        self._tile_size = (sidelength - (self.dimension+1)*self.pad)//(self.dimension*self.board_size)
+        self._tile_size = (sidelength - (self.board_size+1)*self.pad)//(self.board_size ** 2)
+        self._piece_pad = self._tile_size // 5
 
         self._canvas = tk.Canvas(
                     self._root,
@@ -85,14 +87,14 @@ class FourDimChess:
             x_o = (x- self.pad) / (self._tile_size * self.board_size + self.pad)
             if x_o - int(x_o) > (self._tile_size * self.board_size) / (self._tile_size * self.board_size + self.pad):
                 return None
-            elif x_o >= self.dimension:
+            elif x_o >= self.board_size:
                 return None
             x_o = int(x_o)
 
             y_o = (y- self.pad) / (self._tile_size * self.board_size + self.pad)
             if y_o - int(y_o) > (self._tile_size * self.board_size) / (self._tile_size * self.board_size + self.pad):
                 return None
-            elif y_o >= self.dimension:
+            elif y_o >= self.board_size:
                 return None
             y_o = int(y_o)
 
@@ -132,10 +134,12 @@ class FourDimChess:
             y = self.pad
             board_colors = [self.colors["brown"], self.colors["light_brown"]]
             index = 0
-            for a in range(self.dimension):
-                for b in range(self.dimension):
+            # the dimension is represented with the amount of for loops
+            for a in range(self.board_size):
+                for b in range(self.board_size):
                     for c in range(self.board_size):
                         for d in range(self.board_size):
+                            index = (a + b + c + d) % 2
                             self._canvas.create_rectangle(
                                 x,
                                 y,
@@ -143,25 +147,17 @@ class FourDimChess:
                                 y + self._tile_size,
                                 fill = board_colors[index]
                             )
-                            index += 1
-                            index %= 2
                             x += self._tile_size
-                        index += 1
-                        index %= 2
                         x -= self._tile_size * self.board_size
                         y += self._tile_size
-                    index += 1
-                    index %= 2
                     x += self._tile_size * self.board_size + self.pad
                     y -= self._tile_size * self.board_size
-                index += 1
-                index %= 2
                 y += self._tile_size * self.board_size + self.pad
                 x = self.pad
 
         # draw pieces
-        for x_o in range(self.dimension):
-            for y_o in range(self.dimension):
+        for x_o in range(self.board_size):
+            for y_o in range(self.board_size):
                 for x_i in range(self.board_size):
                     for y_i in range(self.board_size):
                         pos = (x_o, y_o, x_i, y_i)
