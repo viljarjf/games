@@ -102,7 +102,7 @@ class FourDimChess:
             
             clickpos = (x_o, y_o, x_i, y_i)
             piece = Piece()
-            piece.set_from_str("Rook", self._turn)
+            piece.set_from_str("Queen", self._turn)
             if self._board.set_tile(clickpos, piece):
                 if(self.draw_tile(clickpos)):
                     self._turn += 1
