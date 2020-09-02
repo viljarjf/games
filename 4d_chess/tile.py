@@ -4,6 +4,16 @@ import copy
 ### Chess tile
 
 class Tile:
+    """Class for tiles on a chess board
+
+    Args:
+        value (str OR int, optional): value of the piece to put on the tile. Defaults to None.
+        color (int, optional): Color of the piece. 0 for black, 1 for white. Defaults to -1.
+
+    Raises:
+        TypeError: wrong type for piece value
+        Exception: Something wrong happened :(
+    """
     
     def __init__(self, value = None, color = -1):
         try: 
@@ -25,12 +35,23 @@ class Tile:
         self._id = None
         
     def get_piece(self)-> Piece:
+        """
+        Returns:
+            Piece: Copy of the piece in the tile
+        """
         return copy.copy(self._piece)
     
     def set_piece(self, piece: Piece):
+        """Set the piece of a tile
+
+        Args:
+            piece (Piece): pre-initialised Piece class
+        """
         self._piece = piece
     
     def clear(self):
+        """Clear the tile, by calling Piece.set_empty()
+        """
         self._piece.set_empty()
     
 

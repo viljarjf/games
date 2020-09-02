@@ -5,6 +5,14 @@ import copy
 import numpy as np
 ### Chess board
 class Board:
+    """Chess board class. 
+
+    Args:
+        dimension (int):  Amount of dimensions to use. 
+                          dimension = 4 is the only value currently tested, but other values might work
+        board_size (int): Size of the 2D board(s) measured in tiles. 
+                          Standard 2D chess has board_size = 8. Only 4 has been tested
+    """
     
     def __init__(self, dimension, board_size):
         self._dim = dimension
@@ -17,6 +25,16 @@ class Board:
         self._tiles = np.array(board).reshape(shape)
     
     def get_tile(self, pos: tuple)-> Tile:
+        """Returns a copy of the tile in the given position
+
+        Args:
+            pos (tuple): n-D position vector to the requested tile
+
+        Raises:
+            IndexError: if the given position vector has too few dimensions, or if the vector is out of bounds      
+        Returns:
+            Tile: Copy of the tile at the given position
+        """
         l = copy.deepcopy(self._tiles) 
         # deep copy, we are updating l and don't want to change _tiles
 
