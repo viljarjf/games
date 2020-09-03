@@ -8,7 +8,6 @@ import numpy as np
 from PIL import Image, ImageTk, ImageColor, ImageOps
 import os
 
-temp_piece = "Superqueen"
 
 class FourDimChess:
     """4D Chess
@@ -37,6 +36,7 @@ class FourDimChess:
     def __init__(self, corner, sidelength, board_size = 4):
         self.board_size = board_size
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
+        self._board.random_init()
         self._can_click = True
         self._turn = 1
         self._overlay_ids = []
@@ -134,12 +134,14 @@ class FourDimChess:
             y_i = ((y- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             
             clickpos = (x_o, y_o, x_i, y_i)
+            """
             piece = Piece()
-            piece.set_from_str(temp_piece, self._turn)
+            piece.set_from_str("Knight", self._turn)
             if self._board.set_tile(clickpos, piece):
                 if(self.draw_tile(clickpos)):
                     self._turn += 1
                     self._turn %= 2
+            """
 
             cur_piece = self._board.get_tile(clickpos).get_piece()
             legal_moves = self._move.get_legal_moves(cur_piece, clickpos)       
