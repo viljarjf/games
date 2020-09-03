@@ -87,6 +87,8 @@ class FourDimChess:
             white_img = img.resize((img_size))
             # invert the white image to get the black ones
             black_img = ImageOps.invert(white_img.convert("RGB"))
+            # color inversion does not support RGBA. 
+            # Hack around this by appending the A data from the white image
             tmp = np.array(white_img)[:, :, -1]
             black_img_arr = np.array(white_img)
             black_img_arr[:, :, :-1] = np.array(black_img)
@@ -97,7 +99,6 @@ class FourDimChess:
 
         self.draw_all(redraw = True)
                         
-
         def on_click(event)-> None:
             """This function runs on every click. DO NOT CALL ELSEWHERE
 
@@ -142,7 +143,9 @@ class FourDimChess:
                     self._turn += 1
                     self._turn %= 2
             """
-
+            
+            # TODO implement storing these somewhere, 
+            # to be able toswitch between getting legal moves and moving the piece
             cur_piece = self._board.get_tile(clickpos).get_piece()
             legal_moves = self._move.get_legal_moves(cur_piece, clickpos)       
             
@@ -168,6 +171,7 @@ class FourDimChess:
             board_colors = [self.colors["brown"], self.colors["light_brown"]]
             index = 0
             # the dimension is represented with the amount of for loops
+            # TODO replace with np.nditer
             for a in range(self.board_size):
                 for b in range(self.board_size):
                     for c in range(self.board_size):
@@ -189,6 +193,7 @@ class FourDimChess:
                 x = self.pad
 
         # draw pieces
+        # TODO replace with np.nditer
         for x_o in range(self.board_size):
             for y_o in range(self.board_size):
                 for x_i in range(self.board_size):

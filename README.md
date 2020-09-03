@@ -10,4 +10,5 @@ clone of plague inc, made for Gløshaugen. Unfinished
 
 ## 4D chess 
 
-unfinished 4D chess, graphics are only 4D but the rest is fairly abstract. Little needs to be added to change dimensions
+unfinished multidimensional chess, graphics are only for 4D but the rest is fairly abstract. Little needs to be added to change dimensions. 
+Board size is arbitrary
