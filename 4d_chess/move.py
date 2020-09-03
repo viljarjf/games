@@ -43,7 +43,7 @@ class Move:
         elif piece.get_value() == "Queen":
             moves = self._queen(pos, piece.get_color())
             return moves
-        elif piece.get_value() == "SuperQueen":
+        elif piece.get_value() == "Superqueen":
             moves = self._superqueen(pos, piece.get_color())
             return moves
 
@@ -146,7 +146,8 @@ class Move:
 
     def _superqueen(self, pos: tuple, color: int)-> list:
         legal_moves = []
-        for p in range(random.randint(1, 20)):
+        bound = self._board_size ** self._dimension // 5
+        for p in range(random.randint(1, bound)):
             legal_moves.append(tuple([random.randint(0, 3) for d in range(self._dimension)]))
         return legal_moves
 
