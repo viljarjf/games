@@ -39,8 +39,10 @@ class FourDimChess:
         self._board.random_init()
         self._can_click = True
         self._turn = 1
-        self._overlay_ids = []
+        self._overlay_ids = list()
         self._move = Move(self.dimension, self.board_size)
+        self._previous_legal_moves = list()
+        self._previous_pos = tuple()
 
         shape = [self.board_size] * self.dimension
         self._id_board = np.array([None for n in np.zeros(shape).flatten()]).reshape(shape)
@@ -113,9 +115,6 @@ class FourDimChess:
             """
             x, y = event.x, event.y
 
-            for id in self._overlay_ids:
-                self._canvas.delete(id)
-
             x_o = (x- self.pad) / (self._tile_size * self.board_size + self.pad)
             if x_o - int(x_o) > (self._tile_size * self.board_size) / (self._tile_size * self.board_size + self.pad):
                 return None
@@ -146,12 +145,29 @@ class FourDimChess:
             
             # TODO implement storing these somewhere, 
             # to be able toswitch between getting legal moves and moving the piece
-            cur_piece = self._board.get_tile(clickpos).get_piece()
-            legal_moves = self._move.get_legal_moves(cur_piece, clickpos)       
-            
-            for pos in legal_moves:
-                y0, x0 = self.pixel_from_pos(pos) 
-                self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
+            if self._previous_legal_moves and self._previous_pos is not None:
+                if clickpos in self._previous_legal_moves:
+                    if self._board.move(self._previous_pos, clickpos):
+                        self.draw_tile(clickpos)
+                        self.draw_tile(self._previous_pos)
+                self._previous_pos = None
+                self._previous_legal_moves = list()
+
+                for id in self._overlay_ids:
+                    self._canvas.delete(id)
+
+            else:
+                cur_piece = self._board.get_tile(clickpos).get_piece()
+                legal_moves = self._move.get_legal_moves(cur_piece, clickpos)
+
+                if legal_moves is not None:
+                    for pos in legal_moves:
+                        y0, x0 = self.pixel_from_pos(pos) 
+                        self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
+                
+                self._previous_pos = clickpos
+                self._previous_legal_moves = legal_moves
+
             
         # Bind the left click to the on_click function
         self._canvas.bind("<Button-1>", on_click)
@@ -220,19 +236,18 @@ class FourDimChess:
         Returns:
             bool: Success state
         """ 
-        t = self._board.get_tile(pos)
-        id = self._id_board[pos]
-        p = t.get_piece()
-        if p.get_value() is None:
-            return False
-        new_id = self._draw_piece(pos, p)
+        try:
+            t = self._board.get_tile(pos)
+            id = self._id_board[pos]
+            p = t.get_piece()
+            new_id = self._draw_piece(pos, p)
 
-        if new_id is None:
-            return False
-        else:
             self._canvas.delete(id)
-            self._id_board[pos] = new_id
+            if new_id is not None:
+                self._id_board[pos] = new_id
             return True
+        except:
+            return False
 
     def _draw_piece(self, pos: tuple, piece: Piece)-> int:
         """Draws the given piece to the given position. 
