@@ -86,6 +86,7 @@ class Board:
         if  p_start.get_color() == p_end.get_color():
             return False
 
+        # simple, but bad way to ensure the board is not edited if the move goes wrong.
         tmp_board = copy.deepcopy(self._tiles) 
 
         if(self.set_tile(end, p_start)):
