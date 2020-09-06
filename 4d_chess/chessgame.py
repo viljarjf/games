@@ -1,11 +1,13 @@
 from board import Board
 from tile import Tile
-from piece import Piece
+from piece import Piece, legal_names
 from move import Move
 
 import tkinter as tk
 import numpy as np
-from PIL import Image, ImageTk, ImageColor
+from PIL import Image, ImageTk, ImageColor, ImageOps
+import os
+
 
 class FourDimChess:
     """4D Chess
@@ -15,6 +17,8 @@ class FourDimChess:
     Args:
         corner (tuple): (x, y) pixel coordinates for top left corner of the game
         sidelength (int): Height and width of the game board, in pixels
+        board_size (int, optional): Size of the 2D boards. In standard 2D chess, board_size = 8. 
+                                    Defaults to 4.
 
     """
     
@@ -22,20 +26,23 @@ class FourDimChess:
         "brown": "#d87d29",
         "light_brown": "#fdc47c",
         "selected": "#90e048",
-        "transparency": 0.7,
+        "transparency": 0.8,
         "black": "#000000",
         "white": "#ffffff"
     }
     # Hard-coded dim = 4
     dimension = 4
-    board_size = 4
 
-    def __init__(self, corner, sidelength):
+    def __init__(self, corner, sidelength, board_size = 4):
+        self.board_size = board_size
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
+        self._board.random_init()
         self._can_click = True
         self._turn = 1
-        self._overlay_ids = []
+        self._overlay_ids = list()
         self._move = Move(self.dimension, self.board_size)
+        self._previous_legal_moves = list()
+        self._previous_pos = tuple()
 
         shape = [self.board_size] * self.dimension
         self._id_board = np.array([None for n in np.zeros(shape).flatten()]).reshape(shape)
@@ -47,8 +54,8 @@ class FourDimChess:
         self._height = sidelength
         self._width = sidelength
         self.pad = 10
-        self._piece_pad = 10
-        self._tile_size = (sidelength - (self.dimension+1)*self.pad)//(self.dimension*self.board_size)
+        self._tile_size = (sidelength - (self.board_size+1)*self.pad)//(self.board_size ** 2)
+        self._piece_pad = self._tile_size // 8
 
         self._canvas = tk.Canvas(
                     self._root,
@@ -62,9 +69,38 @@ class FourDimChess:
         image = Image.new('RGBA', (self._tile_size, self._tile_size), fill)
         self._overlay_image = ImageTk.PhotoImage(image)
 
+        # initialize the piece images
+        self._piece_graphics = {}
+        """contains imageTk.PhotoImage objects.
+        key: str, piece name
+
+        Returns:
+            dict: 
+                keys (str): black, white.
+                vals: imageTk.PhotoImage instances
+        """
+        dirname = os.path.dirname(__file__)
+        for p in legal_names:
+            if p == "Superqueen":
+                img = Image.open(f"{dirname}/graphics/Queen.png")
+            else:
+                img = Image.open(f"{dirname}/graphics/{p}.png")
+            img_size = [self._tile_size - 2 * self._piece_pad]*2
+            white_img = img.resize((img_size))
+            # invert the white image to get the black ones
+            black_img = ImageOps.invert(white_img.convert("RGB"))
+            # color inversion does not support RGBA. 
+            # Hack around this by appending the A data from the white image
+            tmp = np.array(white_img)[:, :, -1]
+            black_img_arr = np.array(white_img)
+            black_img_arr[:, :, :-1] = np.array(black_img)
+            black_img_arr[:, :, -1] = tmp
+            black_img = Image.fromarray(black_img_arr)
+            self._piece_graphics[p] = {"black": ImageTk.PhotoImage(black_img), 
+                                       "white": ImageTk.PhotoImage(white_img)}
+
         self.draw_all(redraw = True)
                         
-
         def on_click(event)-> None:
             """This function runs on every click. DO NOT CALL ELSEWHERE
 
@@ -79,20 +115,17 @@ class FourDimChess:
             """
             x, y = event.x, event.y
 
-            for id in self._overlay_ids:
-                self._canvas.delete(id)
-
             x_o = (x- self.pad) / (self._tile_size * self.board_size + self.pad)
             if x_o - int(x_o) > (self._tile_size * self.board_size) / (self._tile_size * self.board_size + self.pad):
                 return None
-            elif x_o >= self.dimension:
+            elif x_o >= self.board_size:
                 return None
             x_o = int(x_o)
 
             y_o = (y- self.pad) / (self._tile_size * self.board_size + self.pad)
             if y_o - int(y_o) > (self._tile_size * self.board_size) / (self._tile_size * self.board_size + self.pad):
                 return None
-            elif y_o >= self.dimension:
+            elif y_o >= self.board_size:
                 return None
             y_o = int(y_o)
 
@@ -101,19 +134,40 @@ class FourDimChess:
             y_i = ((y- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             
             clickpos = (x_o, y_o, x_i, y_i)
+            """
             piece = Piece()
-            piece.set_from_str("Rook", self._turn)
+            piece.set_from_str("Knight", self._turn)
             if self._board.set_tile(clickpos, piece):
                 if(self.draw_tile(clickpos)):
                     self._turn += 1
                     self._turn %= 2
-
-            cur_piece = self._board.get_tile(clickpos).get_piece()
-            legal_moves = self._move.get_legal_moves(cur_piece, clickpos)       
+            """
             
-            for pos in legal_moves:
-                y0, x0 = self.pixel_from_pos(pos) 
-                self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
+            # TODO implement storing these somewhere, 
+            # to be able toswitch between getting legal moves and moving the piece
+            if self._previous_legal_moves and self._previous_pos is not None:
+                if clickpos in self._previous_legal_moves:
+                    if self._board.move(self._previous_pos, clickpos):
+                        self.draw_tile(clickpos)
+                        self.draw_tile(self._previous_pos)
+                self._previous_pos = None
+                self._previous_legal_moves = list()
+
+                for id in self._overlay_ids:
+                    self._canvas.delete(id)
+
+            else:
+                cur_piece = self._board.get_tile(clickpos).get_piece()
+                legal_moves = self._move.get_legal_moves(cur_piece, clickpos)
+
+                if legal_moves is not None:
+                    for pos in legal_moves:
+                        y0, x0 = self.pixel_from_pos(pos) 
+                        self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
+                
+                self._previous_pos = clickpos
+                self._previous_legal_moves = legal_moves
+
             
         # Bind the left click to the on_click function
         self._canvas.bind("<Button-1>", on_click)
@@ -132,10 +186,13 @@ class FourDimChess:
             y = self.pad
             board_colors = [self.colors["brown"], self.colors["light_brown"]]
             index = 0
-            for a in range(self.dimension):
-                for b in range(self.dimension):
+            # the dimension is represented with the amount of for loops
+            # TODO replace with np.nditer
+            for a in range(self.board_size):
+                for b in range(self.board_size):
                     for c in range(self.board_size):
                         for d in range(self.board_size):
+                            index = (a + b + c + d) % 2
                             self._canvas.create_rectangle(
                                 x,
                                 y,
@@ -143,43 +200,30 @@ class FourDimChess:
                                 y + self._tile_size,
                                 fill = board_colors[index]
                             )
-                            index += 1
-                            index %= 2
                             x += self._tile_size
-                        index += 1
-                        index %= 2
                         x -= self._tile_size * self.board_size
                         y += self._tile_size
-                    index += 1
-                    index %= 2
                     x += self._tile_size * self.board_size + self.pad
                     y -= self._tile_size * self.board_size
-                index += 1
-                index %= 2
                 y += self._tile_size * self.board_size + self.pad
                 x = self.pad
 
         # draw pieces
-        for x_o in range(self.dimension):
-            for y_o in range(self.dimension):
+        # TODO replace with np.nditer
+        for x_o in range(self.board_size):
+            for y_o in range(self.board_size):
                 for x_i in range(self.board_size):
                     for y_i in range(self.board_size):
                         pos = (x_o, y_o, x_i, y_i)
                         p = self._board.get_tile(pos).get_piece()
                         if p.get_value() is None:
                             continue
-                        c = p.get_color()
-                        p = None
-                        y, x = self.pixel_from_pos(pos)
-                        x += 2 * self._piece_pad
-                        y += 2 * self._piece_pad
-                        self._canvas.create_oval(
-                            x,
-                            y,
-                            x + self._tile_size - 2 *self._piece_pad,
-                            y + self._tile_size - 2 *self._piece_pad,
-                            fill = self.colors[c]
-                        )
+                        id = self._id_board[pos]
+                        new_id = self._draw_piece(pos, p)
+                        if new_id is not None:
+                            self._canvas.delete(id)
+                            self._id_board[pos] = new_id
+                        
     
     def draw_tile(self, pos)-> bool:
         """Redraw a single tile's piece
@@ -192,27 +236,42 @@ class FourDimChess:
         Returns:
             bool: Success state
         """ 
-        t = self._board.get_tile(pos)
         try:
+            t = self._board.get_tile(pos)
             id = self._id_board[pos]
-            self._canvas.delete(id)
-        finally:
             p = t.get_piece()
-            if p.get_value() is None:
-                return False
-            c = p.get_color()
-            p = None
-            y, x = self.pixel_from_pos(pos)
-            x += self._piece_pad
-            y += self._piece_pad
-            self._id_board[pos] = self._canvas.create_oval(
-                x,
-                y,
-                x + self._tile_size - 2 * self._piece_pad,
-                y + self._tile_size - 2 * self._piece_pad,
-                fill = self.colors[c]
-            )
+            new_id = self._draw_piece(pos, p)
+
+            self._canvas.delete(id)
+            if new_id is not None:
+                self._id_board[pos] = new_id
             return True
+        except:
+            return False
+
+    def _draw_piece(self, pos: tuple, piece: Piece)-> int:
+        """Draws the given piece to the given position. 
+        Handles different piece graphics and color. 
+
+        Args:
+            pos (tuple):   (x_o, y_o, x_i, y_i), 4D coordinates for the tile. 
+                            o-subscript refers to "outer", meaning position of the boards
+                            i_subscript refers to "inner", meaning position on a single 2D board
+            piece (Piece):  The piece to draw
+
+        Returns:
+            int: tkinter canvas grapic ID. Useful for releasing memofy if something else is drawn on top
+        """
+        color = piece.get_color()
+        piece_val = piece.get_value()
+        if piece_val is None:
+            return None
+        y, x = self.pixel_from_pos(pos)
+        y += self._piece_pad
+        x += self._piece_pad
+        id = self._canvas.create_image((x, y), image = self._piece_graphics[piece_val][color], anchor = tk.NW)
+        return id
+        
     
     def pixel_from_pos(self, pos)-> tuple:
         """Get 2D pixel coordinates from 4D position.

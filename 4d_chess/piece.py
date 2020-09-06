@@ -1,5 +1,8 @@
 ### Chess pieces
 
+legal_names = ["Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "Superqueen"]
+
+
 class Piece:
     """Chess piece
     
@@ -12,7 +15,7 @@ class Piece:
             4: Bishop
             5: Queen
             6: King
-            69: SuperQueen
+            69: Superqueen
 
         color (int): Color of the piece
             -1: None
@@ -41,9 +44,10 @@ class Piece:
             IndexError: If the piece is invalid, either from invalid value or color
         """
 
-        names = [None, "Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "SuperQueen"]
-        
-        if value.capitalize() not in names:
+        names = [None] + legal_names
+        value = value.capitalize()
+
+        if value not in names:
             raise IndexError(f"{value} is not a valid piece. Accepted values are 0 to 6")
         else:
             self._val = value
@@ -63,11 +67,11 @@ class Piece:
         Raises:
             IndexError: If the piece is invalid, either from invalid value or color
         """
-        names = [None, "Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "SuperQueen"]
+        names = [None] + legal_names
 
         if value > 6 or value < 0:
             if value == 69:
-                self._val = "SuperQueen"
+                self._val = "Superqueen"
             else:
                 raise IndexError(f"{value} is not a valid piece. Accepted values are 0 to 6")
         else: 
