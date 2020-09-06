@@ -38,7 +38,7 @@ class FourDimChess:
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
         self._board.random_init()
         self._can_click = True
-        self._turn = 1
+        self._turn = 0
         self._overlay_ids = list()
         self._move = Move(self.dimension, self.board_size)
         self._previous_legal_moves = list()
@@ -134,22 +134,15 @@ class FourDimChess:
             y_i = ((y- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             
             clickpos = (x_o, y_o, x_i, y_i)
-            """
-            piece = Piece()
-            piece.set_from_str("Knight", self._turn)
-            if self._board.set_tile(clickpos, piece):
-                if(self.draw_tile(clickpos)):
-                    self._turn += 1
-                    self._turn %= 2
-            """
             
-            # TODO implement storing these somewhere, 
-            # to be able toswitch between getting legal moves and moving the piece
+
             if self._previous_legal_moves and self._previous_pos is not None:
                 if clickpos in self._previous_legal_moves:
                     if self._board.move(self._previous_pos, clickpos):
                         self.draw_tile(clickpos)
                         self.draw_tile(self._previous_pos)
+                        self._turn += 1
+                        self._turn %= 2
                 self._previous_pos = None
                 self._previous_legal_moves = list()
 
@@ -158,15 +151,20 @@ class FourDimChess:
 
             else:
                 cur_piece = self._board.get_tile(clickpos).get_piece()
-                legal_moves = self._move.get_legal_moves(cur_piece, clickpos)
+                if (cur_piece.get_color() == "white" and self._turn == 0) \
+                    or \
+                    (cur_piece.get_color() == "black" and self._turn == 1):
 
-                if legal_moves is not None:
-                    for pos in legal_moves:
-                        y0, x0 = self.pixel_from_pos(pos) 
-                        self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
-                
-                self._previous_pos = clickpos
-                self._previous_legal_moves = legal_moves
+                        legal_moves = self._move.get_legal_moves(cur_piece, clickpos)
+
+                        if legal_moves is not None:
+                            for pos in legal_moves:
+                                y0, x0 = self.pixel_from_pos(pos) 
+                                self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
+                        
+                        self._previous_pos = clickpos
+                        self._previous_legal_moves = legal_moves
+
 
             
         # Bind the left click to the on_click function

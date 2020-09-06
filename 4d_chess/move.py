@@ -159,9 +159,13 @@ class Move:
             for i in range(self._board_size):
                 move = list(copy.copy(pos))
                 move[direcion] = i
+                # skip starting pos
+                if tuple(move) == pos:
+                    continue
                 legal_moves.append(tuple(move))
+
         return list(set(legal_moves))
-    
+
     def _bishop(self, pos: tuple)-> list:
         legal_moves = []
         # first, set up a loop over two dimensions at a time
@@ -177,6 +181,10 @@ class Move:
                         move = list(copy.copy(pos))
                         move[dim] += n
                         move[index] += n * sign
+                        
+                        # remove the starting position
+                        if tuple(move) == pos:
+                            continue
                         # range-check
                         is_legal = True
                         for x in move:
@@ -187,6 +195,7 @@ class Move:
                             legal_moves.append(tuple(move))
 
         return list(set(legal_moves))
+
     def _queen(self, pos: tuple)-> list:
         # a queen is a rook and a bishop combined
         legal_moves = []
