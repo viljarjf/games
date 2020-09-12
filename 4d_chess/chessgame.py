@@ -139,6 +139,8 @@ class FourDimChess:
             x_i = ((x- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             y_i = ((y- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             clickpos = (x_o, y_o, x_i, y_i)
+
+            print(self._board.get_tile(clickpos).get_piece().get_value())
             
             # handle moving
             # first, check if a move has been initialized
@@ -163,7 +165,7 @@ class FourDimChess:
             else:
                 cur_piece = self._board.get_tile(clickpos).get_piece()
                 # only init move if it is the playes's turn
-                if (cur_piece.get_color() == "white" and self._turn == 0) \
+                if  (cur_piece.get_color() == "white" and self._turn == 0) \
                     or \
                     (cur_piece.get_color() == "black" and self._turn == 1):
 
@@ -236,7 +238,7 @@ class FourDimChess:
                             self._id_board[pos] = new_id
                         
     
-    def draw_tile(self, pos)-> bool:
+    def draw_tile(self, pos: tuple)-> bool:
         """Redraw a single tile's piece
 
         Args:
