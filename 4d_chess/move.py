@@ -209,52 +209,33 @@ class Move:
     def _trebuchet(self, pos: tuple)-> list:
         # add (3, 1, 1, 0) in random order
         legal_moves = []
-        # third nested for loop. Kept outside to reduce copy-pasting
-        def third(move: list, i_1, i_2, sign: int):
-            for i_3, p_3 in enumerate(move):
-                if i_3 == i_2 or i_3 == i_2:
-                    continue
-                if p_3 + sign > -1 and p_3 + sign < self._board_size:
-                    move_3 = copy.copy(move)
-                    move_3[i_3] += sign
-                    legal_moves.append(tuple(move_3))
-
         for d in range(self._dimension):
-            for i_1, p_1 in enumerate(pos):
-                    if p_1+3 < self._board_size:
+            for sign_1 in range(-3, 4, 6):
+                for i_1, p_1 in enumerate(pos):
+                    if p_1 + sign_1 < self._board_size and p_1 + sign_1 > -1:
                         # changed to list, to enable item assignment
                         move = list(copy.copy(pos))
-                        move[i_1] += 3
-                        # inner loop does the same as outer loop, but skips the dimension already used
-                        for i_2, p_2 in enumerate(move):
-                            if i_2 == i_1:
-                                continue
-                            if p_2+1 < self._board_size:
-                                finalmove = copy.copy(move)
-                                finalmove[i_2] += 1
-                                legal_moves.append(tuple(finalmove))
-                                third(finalmove, i_1, i_2, 1)
-                            if p_2-1 > -1:
-                                finalmove = copy.copy(move)
-                                finalmove[i_2] -= 1
-                                legal_moves.append(tuple(finalmove))
-                                third(finalmove, i_1, i_2, -1)
-                            
-                    if p_1 - 3 > -1:
-                        move = list(copy.copy(pos))
-                        move[i_1] -= 3
-                        for i_2, p_2 in enumerate(move):
-                            if i_2 == i_1:
-                                continue
-                            if p_2+1 < self._board_size:
-                                finalmove = copy.copy(move)
-                                finalmove[i_2] += 1
-                                legal_moves.append(tuple(finalmove))
-                                third(finalmove, i_1, i_2, 1)
-                            if p_2-1 > -1:
-                                finalmove = copy.copy(move)
-                                finalmove[i_2] -= 1
-                                legal_moves.append(tuple(finalmove))
-                                third(finalmove, i_1, i_2, -1)
-                # remove duplicates. This keeps the overlay from turning opaque when a tile has many possible ways to get to
+                        move[i_1] += sign_1
+                        legal_moves.append(tuple(move))
+                        for sign_2 in range(-1, 2, 2):
+                            for i_2, p_2 in enumerate(move):
+                                # remove the tile one closer to the starting tile
+                                if i_1 == i_2 and abs(sign_2)/sign_2 != abs(sign_1)/sign_1:
+                                    continue
+                                if p_2 + sign_2 < self._board_size and p_2 + sign_2 > -1:
+                                    move_2 = copy.copy(move)
+                                    move_2[i_2] += sign_2
+                                    legal_moves.append(tuple(move_2))
+                                    for sign_3 in range(-1, 2, 2):
+                                        for i_3, p_3 in enumerate(move_2):
+                                            if i_3 == i_1 and abs(sign_3)/sign_3 != abs(sign_1)/sign_1:
+                                                continue
+                                            elif i_3 == i_2:
+                                                continue
+                                            if p_3 + sign_3 < self._board_size and p_3 + sign_3 > -1:
+                                                move_3 = copy.copy(move_2)
+                                                move_3[i_3] += sign_3
+                                                legal_moves.append(tuple(move_3))
+
+        # remove duplicates. This keeps the overlay from turning opaque when a tile has many possible ways to get to
         return list(set(legal_moves))
