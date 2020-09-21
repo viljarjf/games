@@ -97,7 +97,7 @@ class Board:
         self._tiles = tmp_board
         return False
     
-    def random_init(self):
+    def init_random(self):
         """Place a couple pieces randomly. Delete any previous pieces
         """
         l = legal_names[:-1] # exclude superqueen
@@ -109,3 +109,20 @@ class Board:
                 piece = Piece()
                 piece.set_from_str(piece_val, color)
                 self._tiles[it.multi_index].set_piece(piece)
+    
+    def init_4d(self):
+        """Initialize the board for a standard 4x4x4x4 game
+        """
+        if self._dim != 4 or self._size != 4:
+            raise IndexError("Board size and dimension must both be 4")
+        # pawns
+        for color in range(2):
+            pawn = Piece()
+            pawn.set_from_str("Pawn", color)
+            start = 3*color 
+            for x_o in range(4):
+                for x_i in range(4):
+                    self._tiles[x_o, start, x_i, 1 + color].set_piece(pawn)
+        
+        # the rest
+        # [R, Kn, T, R], [B, K, Q, B], [B, Q, K, B], [R, T, Kn, R]

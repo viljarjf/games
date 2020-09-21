@@ -37,7 +37,7 @@ class FourDimChess:
         # initialize the board
         self.board_size = board_size
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
-        self._board.random_init()
+        self._board.init_random()
 
         # set up some stuff to enable moving
         self._can_click = True
