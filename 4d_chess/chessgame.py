@@ -1,7 +1,7 @@
-from board import Board
-from tile import Tile
-from piece import Piece, legal_names
-from move import Move
+from .board import Board
+from .tile import Tile
+from .piece import Piece, legal_names
+from .moves import Moves
 
 import tkinter as tk
 import numpy as np
@@ -10,6 +10,57 @@ import os
 
 
 class FourDimChess:
+    """
+    Abstract class for 4D chess.
+
+    Methods:
+        move_piece: move a piece on the board and update the turn.
+    """
+    
+    # Hard-coded dim = 4
+    dimension = 4
+
+    def __init__(self, board_size = 4):
+        # initialize the board
+        self.board_size = board_size
+        self._board = Board(dimension = self.dimension, board_size = self.board_size)
+        self._board.init_random()
+
+        # set up some stuff to enable moving
+        self._turn = 0
+        self._moves = Moves(self.dimension, self.board_size)
+    
+    def move_piece(self, init_pos, dest_pos)-> bool:
+        """
+        Move a piece from `init_pos` to `dest_pos`, if the move is allowed
+        Updates the turn (`self._turn`)
+
+        Args:
+            init_pos (tuple):   (x_o, y_o, x_i, y_i), 4D coordinates for the piece. 
+                                o-subscript refers to "outer", meaning position of the boards
+                                i_subscript refers to "inner", meaning position on a single 2D board 
+            dest_pos (tuple):   (x_o, y_o, x_i, y_i), 4D coordinates for the destination. 
+                                o-subscript refers to "outer", meaning position of the boards
+                                i_subscript refers to "inner", meaning position on a single 2D board 
+        
+        Returns:
+            bool, success state of the move
+        """
+        piece = self._board.get_tile(init_pos).get_piece()
+        if piece.get_value() is not None:
+            legal_moves = self._moves.get_legal_moves(piece)
+            # check if the move is legal
+            if dest_pos in legal_moves:
+                # attempt the move
+                if self._board.move(self._previous_pos, dest_pos):
+                    self._turn += 1
+                    self._turn %= 2
+                    return True
+        return False 
+
+                    
+
+class FourDimGUI(FourDimChess):
     """4D Chess
 
     Call self.start() to play.
@@ -21,7 +72,6 @@ class FourDimChess:
                                     Defaults to 4.
 
     """
-    
     colors = {
         "brown": "#d87d29",
         "light_brown": "#fdc47c",
@@ -30,22 +80,13 @@ class FourDimChess:
         "black": "#000000",
         "white": "#ffffff"
     }
-    # Hard-coded dim = 4
-    dimension = 4
-
     def __init__(self, corner, sidelength, board_size = 4):
-        # initialize the board
-        self.board_size = board_size
-        self._board = Board(dimension = self.dimension, board_size = self.board_size)
-        self._board.init_random()
 
-        # set up some stuff to enable moving
-        self._can_click = True
-        self._turn = 0
+        super().__init__(board_size)
+
         self._overlay_ids = list()
-        self._move = Move(self.dimension, self.board_size)
         self._previous_legal_moves = list()
-        self._previous_pos = tuple()
+        self._previous_pos = None
 
         # graphics
         shape = [self.board_size] * self.dimension
@@ -104,9 +145,6 @@ class FourDimChess:
             self._piece_graphics[p] = {"black": ImageTk.PhotoImage(black_img), 
                                        "white": ImageTk.PhotoImage(white_img)}
 
-        # draw the board
-        self.draw_all(redraw = True)
-                        
         def on_click(event)-> None:
             """This function runs on every click. DO NOT CALL ELSEWHERE
 
@@ -122,9 +160,10 @@ class FourDimChess:
             x, y = event.x, event.y
 
             # the next codeblocks converts pixel positios to tile position vectors
+            # returns None if click is not on a tile
             x_o = (x- self.pad) / (self._tile_size * self.board_size + self.pad)
             if x_o - int(x_o) > (self._tile_size * self.board_size) / (self._tile_size * self.board_size + self.pad):
-                return None
+                return None 
             elif x_o >= self.board_size:
                 return None
             x_o = int(x_o)
@@ -139,52 +178,41 @@ class FourDimChess:
             x_i = ((x- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             y_i = ((y- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             clickpos = (x_o, y_o, x_i, y_i)
-
-            print(self._board.get_tile(clickpos).get_piece().get_value())
             
             # handle moving
-            # first, check if a move has been initialized
-            if self._previous_legal_moves and self._previous_pos is not None:
-                # check if the move is legal
-                if clickpos in self._previous_legal_moves:
-                    # attempt the move
-                    if self._board.move(self._previous_pos, clickpos):
-                        self.draw_tile(clickpos)
-                        self.draw_tile(self._previous_pos)
-                        self._turn += 1
-                        self._turn %= 2
+            if self._previous_pos is None:
+                self._previous_pos = clickpos
+                # draw the overlay of legal moves
+                piece = self._board.get_tile(clickpos).get_piece()
+                if piece.get_value() is not None:
+                    legal_moves = self._moves.get_legal_moves(piece)
+                    for pos in legal_moves:
+                        y0, x0 = self.pixel_from_pos(pos) 
+                        self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
+                # if the clicked tile is empty, don't store it
+                else:
+                    self._previous_pos = None
+            else:
+                self.move_piece(self._previous_pos, clickpos)
+                self.draw_tile(clickpos)
+                self.draw_tile(self._previous_pos)
+
                 # regardless if the move is legal or not, delete the starting pos and legal moves
                 self._previous_pos = None
-                self._previous_legal_moves = list()
 
-                # delete the overlay
+                # delete the overlay of legal moves
                 for id in self._overlay_ids:
                     self._canvas.delete(id)
 
-            # if a move is not initialized, do so
-            else:
-                cur_piece = self._board.get_tile(clickpos).get_piece()
-                # only init move if it is the playes's turn
-                if  (cur_piece.get_color() == "white" and self._turn == 0) \
-                    or \
-                    (cur_piece.get_color() == "black" and self._turn == 1):
-
-                        legal_moves = self._move.get_legal_moves(cur_piece, clickpos)
-
-                        # draw the overlay of legal moves
-                        if legal_moves is not None:
-                            for pos in legal_moves:
-                                y0, x0 = self.pixel_from_pos(pos) 
-                                self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
-                        # store the move starting pos and legal moves
-                        self._previous_pos = clickpos
-                        self._previous_legal_moves = legal_moves
-
         # we are now out of the on_click namespace
-                
+  
         # Bind the left click to the on_click function
         self._canvas.bind("<Button-1>", on_click)
-    
+
+        # finally, draw the board graphics
+        self.draw_all(True)  
+
+
     def draw_all(self, redraw = False):
         """ 
         Draw the tiles and pieces on the board
@@ -199,7 +227,8 @@ class FourDimChess:
             y = self.pad
             board_colors = [self.colors["brown"], self.colors["light_brown"]]
             index = 0
-            # the dimension is represented with the amount of for loops
+            # the dimension is represented with the amount of for loops,
+            # I don't know how to abstract it further
             # TODO replace with np.nditer maybe?
             for a in range(self.board_size):
                 for b in range(self.board_size):
@@ -236,8 +265,8 @@ class FourDimChess:
                         if new_id is not None:
                             self._canvas.delete(id)
                             self._id_board[pos] = new_id
-                        
-    
+
+
     def draw_tile(self, pos: tuple)-> bool:
         """Redraw a single tile's piece
 
@@ -262,6 +291,7 @@ class FourDimChess:
         except:
             return False
 
+
     def _draw_piece(self, pos: tuple, piece: Piece)-> int:
         """Draws the given piece to the given position. 
         Handles different piece graphics and color. 
@@ -273,7 +303,7 @@ class FourDimChess:
             piece (Piece):  The piece to draw
 
         Returns:
-            int: tkinter canvas grapic ID. Useful for releasing memofy if something else is drawn on top
+            int: tkinter canvas grapic ID. Useful for releasing memory if something else is drawn on top
         """
         color = piece.get_color()
         piece_val = piece.get_value()
@@ -312,5 +342,3 @@ class FourDimChess:
         """Run the game. This halts all code after the call, untill the game window is closed.
         """
         self._root.mainloop()
-
-    

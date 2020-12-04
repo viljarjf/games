@@ -1,8 +1,8 @@
-from piece import Piece
+from .piece import Piece
 import copy
 import random
 
-class Move:
+class Moves:
     """Class for handling the available moves for a chess piece
 
     Args:

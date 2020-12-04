@@ -1,4 +1,4 @@
-from piece import Piece
+from .piece import Piece
 
 import copy
 ### Chess tile

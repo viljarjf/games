@@ -1,5 +1,5 @@
-from tile import Tile
-from piece import Piece, legal_names
+from .tile import Tile
+from .piece import Piece, legal_names
 
 import copy
 import numpy as np
