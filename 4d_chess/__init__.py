@@ -1,1 +1,1 @@
-__all__ = ["piece", "tile", "mover", "board", "chessgame"]
+__all__ = ["piece", "tile", "moves", "board", "chessgame"]

@@ -48,7 +48,7 @@ class FourDimChess:
         """
         piece = self._board.get_tile(init_pos).get_piece()
         if piece.get_value() is not None:
-            legal_moves = self._moves.get_legal_moves(piece)
+            legal_moves = self._moves.get_legal_moves(piece, init_pos)
             # check if the move is legal
             if dest_pos in legal_moves:
                 # attempt the move
@@ -61,7 +61,7 @@ class FourDimChess:
                     
 
 class FourDimGUI(FourDimChess):
-    """4D Chess
+    """4D Chess, implemented with tkinter
 
     Call self.start() to play.
 
@@ -184,8 +184,14 @@ class FourDimGUI(FourDimChess):
                 self._previous_pos = clickpos
                 # draw the overlay of legal moves
                 piece = self._board.get_tile(clickpos).get_piece()
-                if piece.get_value() is not None:
-                    legal_moves = self._moves.get_legal_moves(piece)
+                # first, ensure correct turn
+                if  (piece.get_color() == "white" and self._turn == 1) \
+                    or \
+                    (piece.get_color() == "black" and self._turn == 0):
+                    self._previous_pos = None
+                # if colour is correct, draw an overlay of legal moves
+                elif piece.get_value() is not None:
+                    legal_moves = self._moves.get_legal_moves(piece, clickpos)
                     for pos in legal_moves:
                         y0, x0 = self.pixel_from_pos(pos) 
                         self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
