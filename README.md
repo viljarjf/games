@@ -6,9 +6,12 @@ complete. Small bug with double summing when 0422 -> 0008 for example
 
 ## pest as 
 
-clone of plague inc, made for Gløshaugen. Unfinished
+disease game, heavily inspired by plague inc, but the map is of gløshaugen. Unfinished
 
 ## 4D chess 
 
-unfinished multidimensional chess, graphics are only for 4D but the rest is fairly abstract. Little needs to be added to change dimensions. 
-Board size is arbitrary
+multidimensional chess, made as abstractly as possible to make it easier to specialise into different dimensions.
+
+Graphics implemented with tkinter for 4D. Future plans for a web port with Flask. 
+
+Unfinished. Install the packages in `requirements.txt` before playing, e.g. `python3 -m pip install -r 4d_chess/requirements.txt`
