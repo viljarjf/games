@@ -57,8 +57,38 @@ class FourDimChess:
                     self._turn %= 2
                     return True
         return False 
+    
+    def is_check(self, pos)-> bool:
+        """return wether a position is in check or not
+        returns false if tile is empty
 
-                    
+        Args:
+            pos (tuple):    (x_o, y_o, x_i, y_i), 4D coordinates for the piece. 
+                            o-subscript refers to "outer", meaning position of the boards
+                            i_subscript refers to "inner", meaning position on a single 2D board
+
+        Returns:
+            bool: Wether the position is in check.
+        """
+        ### Setup
+        p = self._board.get_tile(pos).get_piece()
+        if p.get_color() is None:
+            return False
+        c = p.get_color()
+        moves = list()
+        it = np.nditer(self._board.get_board(), flags = ["refs_ok", "multi_index"])
+
+        for tile in it:
+            new_p = self._board.get_tile(it.multi_index).get_piece()
+            # if the piece is on the opposing team..
+            if new_p.get_color() is not None and new_p.get_color() != c:
+                # .. add their available moves to the list
+                [moves.append(i) for i in self._moves.get_legal_moves(new_p, it.multi_index)]
+
+        # remove duplicates
+        moves = list(set(moves))
+
+        return pos in moves
 
 class FourDimGUI(FourDimChess):
     """4D Chess, implemented with tkinter
@@ -73,8 +103,8 @@ class FourDimGUI(FourDimChess):
 
     """
     colors = {
-        "brown": "#d87d29",
-        "light_brown": "#fdc47c",
+        "dark_tile": "#d87d29",
+        "light_tile": "#fdc47c",
         "selected": "#90e048",
         "transparency": 0.8,
         "black": "#000000",
@@ -231,7 +261,7 @@ class FourDimGUI(FourDimChess):
             # draw tiles
             x = self.pad
             y = self.pad
-            board_colors = [self.colors["brown"], self.colors["light_brown"]]
+            board_colors = [self.colors["dark_tile"], self.colors["light_tile"]]
             index = 0
             # the dimension is represented with the amount of for loops,
             # I don't know how to abstract it further

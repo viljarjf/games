@@ -25,6 +25,14 @@ class Board:
         
         self._tiles = np.array(board).reshape(shape)
     
+    def get_board(self) -> np.array:
+        """return a copy of the array of tiles
+
+        Returns:
+            np.array
+        """
+        return copy.copy(self._tiles)
+    
     def get_tile(self, pos: tuple)-> Tile:
         """Returns a copy of the tile in the given position
 
@@ -66,7 +74,8 @@ class Board:
             return False
 
     def move(self, start: tuple, end: tuple)-> bool:
-        """Move a piece from start to end. Does not check wether the piece is allowed to move there.
+        """Move a piece from start to end. 
+        Does not check wether the piece is allowed to move there according to its moveset
 
         Args:
             start (tuple): start position 
