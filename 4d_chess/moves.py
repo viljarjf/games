@@ -1,8 +1,8 @@
-from piece import Piece
+from .piece import Piece
 import copy
 import random
 
-class Move:
+class Moves:
     """Class for handling the available moves for a chess piece
 
     Args:
@@ -42,6 +42,9 @@ class Move:
             return moves
         elif piece.get_value() == "Queen":
             moves = self._queen(pos)
+            return moves
+        elif piece.get_value() == "Trebuchet":
+            moves = self._trebuchet(pos)
             return moves
         elif piece.get_value() == "Superqueen":
             moves = self._superqueen(pos)
@@ -159,9 +162,13 @@ class Move:
             for i in range(self._board_size):
                 move = list(copy.copy(pos))
                 move[direcion] = i
+                # skip starting pos
+                if tuple(move) == pos:
+                    continue
                 legal_moves.append(tuple(move))
+
         return list(set(legal_moves))
-    
+
     def _bishop(self, pos: tuple)-> list:
         legal_moves = []
         # first, set up a loop over two dimensions at a time
@@ -177,6 +184,10 @@ class Move:
                         move = list(copy.copy(pos))
                         move[dim] += n
                         move[index] += n * sign
+                        
+                        # remove the starting position
+                        if tuple(move) == pos:
+                            continue
                         # range-check
                         is_legal = True
                         for x in move:
@@ -187,9 +198,44 @@ class Move:
                             legal_moves.append(tuple(move))
 
         return list(set(legal_moves))
+
     def _queen(self, pos: tuple)-> list:
         # a queen is a rook and a bishop combined
         legal_moves = []
         legal_moves += self._rook(pos)
         legal_moves += self._bishop(pos)
         return list(set([tuple(move) for move in legal_moves]))
+    
+    def _trebuchet(self, pos: tuple)-> list:
+        # add (3, 1, 1, 0) in random order
+        legal_moves = []
+        for d in range(self._dimension):
+            for sign_1 in range(-3, 4, 6):
+                for i_1, p_1 in enumerate(pos):
+                    if p_1 + sign_1 < self._board_size and p_1 + sign_1 > -1:
+                        # changed to list, to enable item assignment
+                        move = list(copy.copy(pos))
+                        move[i_1] += sign_1
+                        legal_moves.append(tuple(move))
+                        for sign_2 in range(-1, 2, 2):
+                            for i_2, p_2 in enumerate(move):
+                                # remove the tile one closer to the starting tile
+                                if i_1 == i_2 and abs(sign_2)/sign_2 != abs(sign_1)/sign_1:
+                                    continue
+                                if p_2 + sign_2 < self._board_size and p_2 + sign_2 > -1:
+                                    move_2 = copy.copy(move)
+                                    move_2[i_2] += sign_2
+                                    legal_moves.append(tuple(move_2))
+                                    for sign_3 in range(-1, 2, 2):
+                                        for i_3, p_3 in enumerate(move_2):
+                                            if i_3 == i_1 and abs(sign_3)/sign_3 != abs(sign_1)/sign_1:
+                                                continue
+                                            elif i_3 == i_2:
+                                                continue
+                                            if p_3 + sign_3 < self._board_size and p_3 + sign_3 > -1:
+                                                move_3 = copy.copy(move_2)
+                                                move_3[i_3] += sign_3
+                                                legal_moves.append(tuple(move_3))
+
+        # remove duplicates. This keeps the overlay from turning opaque when a tile has many possible ways to get to
+        return list(set(legal_moves))

@@ -1,6 +1,6 @@
 ### Chess pieces
 
-legal_names = ["Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "Superqueen"]
+legal_names = ["Pawn", "Knight", "Rook", "Bishop", "Queen", "King", "Trebuchet", "Superqueen"]
 
 
 class Piece:
@@ -15,6 +15,7 @@ class Piece:
             4: Bishop
             5: Queen
             6: King
+            7: Trebuchet
             69: Superqueen
 
         color (int): Color of the piece
@@ -69,7 +70,7 @@ class Piece:
         """
         names = [None] + legal_names
 
-        if value > 6 or value < 0:
+        if value > len(legal_names) - 1 or value < 0:
             if value == 69:
                 self._val = "Superqueen"
             else:
