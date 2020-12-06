@@ -47,7 +47,7 @@ class Tile:
         Args:
             piece (Piece): pre-initialised Piece class
         """
-        self._piece = piece
+        self._piece = copy.copy(piece)
     
     def clear(self):
         """Clear the tile, by calling Piece.set_empty()

@@ -24,7 +24,7 @@ class FourDimChess:
         # initialize the board
         self.board_size = board_size
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
-        self._board.init_random()
+        self._board.init_4d()
 
         # set up some stuff to enable moving
         self._turn = 0

@@ -124,8 +124,9 @@ class Board:
         """
         if self._dim != 4 or self._size != 4:
             raise IndexError("Board size and dimension must both be 4")
-        # pawns
+       
         for color in range(2):
+            # pawns
             pawn = Piece()
             pawn.set_from_str("Pawn", color)
             start = 3*color 
@@ -133,5 +134,60 @@ class Board:
                 for x_i in range(4):
                     self._tiles[x_o, start, x_i, 1 + color].set_piece(pawn)
         
-        # the rest
+            # the rest
+            R = Piece()
+            R.set_from_str("Rook", color)
+            Kn = Piece()
+            Kn.set_from_str("Knight", color)
+            B = Piece()
+            B.set_from_str("Bishop", color)
+            K = Piece()
+            K.set_from_str("King", color)
+            Q = Piece()
+            Q.set_from_str("Queen", color)
+            if color:
+                # white
+                self._tiles[0, 3, 0, 3].set_piece(R)
+                self._tiles[0, 3, 3, 3].set_piece(R)
+                self._tiles[3, 3, 0, 3].set_piece(R)
+                self._tiles[3, 3, 3, 3].set_piece(R)
+
+                self._tiles[0, 3, 1, 3].set_piece(Kn)
+                self._tiles[0, 3, 2, 3].set_piece(Kn)
+                self._tiles[3, 3, 1, 3].set_piece(Kn)
+                self._tiles[3, 3, 2, 3].set_piece(Kn)
+
+                self._tiles[1, 3, 0, 3].set_piece(B)
+                self._tiles[1, 3, 3, 3].set_piece(B)
+                self._tiles[2, 3, 0, 3].set_piece(B)
+                self._tiles[2, 3, 3, 3].set_piece(B)
+
+                self._tiles[1, 3, 1, 3].set_piece(K)
+                self._tiles[2, 3, 2, 3].set_piece(K)
+
+                self._tiles[1, 3, 2, 3].set_piece(Q)
+                self._tiles[2, 3, 1, 3].set_piece(Q)
+            else:
+                # black
+                self._tiles[0, 0, 0, 0].set_piece(R)
+                self._tiles[0, 0, 3, 0].set_piece(R)
+                self._tiles[3, 0, 0, 0].set_piece(R)
+                self._tiles[3, 0, 3, 0].set_piece(R)
+
+                self._tiles[0, 0, 1, 0].set_piece(Kn)
+                self._tiles[0, 0, 2, 0].set_piece(Kn)
+                self._tiles[3, 0, 1, 0].set_piece(Kn)
+                self._tiles[3, 0, 2, 0].set_piece(Kn)
+
+                self._tiles[1, 0, 0, 0].set_piece(B)
+                self._tiles[1, 0, 3, 0].set_piece(B)
+                self._tiles[2, 0, 0, 0].set_piece(B)
+                self._tiles[2, 0, 3, 0].set_piece(B)
+
+                self._tiles[1, 0, 1, 0].set_piece(K)
+                self._tiles[2, 0, 2, 0].set_piece(K)
+
+                self._tiles[1, 0, 2, 0].set_piece(Q)
+                self._tiles[2, 0, 1, 0].set_piece(Q)
+
         # [R, Kn, T, R], [B, K, Q, B], [B, Q, K, B], [R, T, Kn, R]
