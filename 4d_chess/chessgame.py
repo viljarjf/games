@@ -47,12 +47,26 @@ class FourDimChess:
             bool, success state of the move
         """
         piece = self._board.get_tile(init_pos).get_piece()
+        dest_piece = self._board.get_tile(dest_pos).get_piece()
         if piece.get_value() is not None:
             legal_moves = self._moves.get_legal_moves(piece, init_pos)
             # check if the move is legal
             if dest_pos in legal_moves:
                 # attempt the move
                 if self._board.move(self._previous_pos, dest_pos):
+                    # Then, check if the move resulted in a check against the player
+                    c = piece.get_color()
+                    it = np.nditer(self._board.get_board(), flags = ["refs_ok", "multi_index"])
+
+                    for tile in it:
+                        p = self._board.get_tile(it.multi_index).get_piece()
+                        if p.get_value() == "King":
+                            if p.get_color() == c:
+                                if self.is_check(it.multi_index):
+                                    # the move was illegal. reset 
+                                    self._board.move(dest_pos, self._previous_pos)
+                                    self._board.set_tile(dest_pos, dest_piece)
+                                    return False
                     self._turn += 1
                     self._turn %= 2
                     return True
@@ -89,6 +103,9 @@ class FourDimChess:
         moves = list(set(moves))
 
         return pos in moves
+
+
+
 
 class FourDimGUI(FourDimChess):
     """4D Chess, implemented with tkinter
