@@ -1,7 +1,7 @@
 from .board import Board
 from .tile import Tile
 from .piece import Piece, legal_names
-from .moves import Moves
+#from .mover import Mover
 
 import tkinter as tk
 import numpy as np
@@ -14,7 +14,8 @@ class FourDimChess:
     Abstract class for 4D chess.
 
     Methods:
-        move_piece: move a piece on the board and update the turn.
+        move_piece: move a piece on the board and update the turn. 
+        is_check: find out if a position is in check
     """
     
     # Hard-coded dim = 4
@@ -25,11 +26,9 @@ class FourDimChess:
         self.board_size = board_size
         self._board = Board(dimension = self.dimension, board_size = self.board_size)
         self._board.init_4d()
-
-        # set up some stuff to enable moving
         self._turn = 0
-        self._moves = Moves(self.dimension, self.board_size)
     
+
     def move_piece(self, init_pos, dest_pos)-> bool:
         """
         Move a piece from `init_pos` to `dest_pos`, if the move is allowed
@@ -49,7 +48,7 @@ class FourDimChess:
         piece = self._board.get_tile(init_pos).get_piece()
         dest_piece = self._board.get_tile(dest_pos).get_piece()
         if piece.get_value() is not None:
-            legal_moves = self._moves.get_legal_moves(piece, init_pos)
+            legal_moves = self._board.get_legal_moves(init_pos)
             # check if the move is legal
             if dest_pos in legal_moves:
                 # attempt the move
@@ -72,6 +71,7 @@ class FourDimChess:
                     return True
         return False 
     
+
     def is_check(self, pos)-> bool:
         """return wether a position is in check or not
         returns false if tile is empty
@@ -97,7 +97,7 @@ class FourDimChess:
             # if the piece is on the opposing team..
             if new_p.get_color() is not None and new_p.get_color() != c:
                 # .. add their available moves to the list
-                [moves.append(i) for i in self._moves.get_legal_moves(new_p, it.multi_index)]
+                [moves.append(i) for i in self._board.get_legal_moves(it.multi_index)]
 
         # remove duplicates
         moves = list(set(moves))
@@ -119,6 +119,7 @@ class FourDimGUI(FourDimChess):
                                     Defaults to 4.
 
     """
+
     colors = {
         "dark_tile": "#d87d29",
         "light_tile": "#fdc47c",
@@ -127,6 +128,7 @@ class FourDimGUI(FourDimChess):
         "black": "#000000",
         "white": "#ffffff"
     }
+
     def __init__(self, corner, sidelength, board_size = 4):
 
         super().__init__(board_size)
@@ -192,6 +194,7 @@ class FourDimGUI(FourDimChess):
             self._piece_graphics[p] = {"black": ImageTk.PhotoImage(black_img), 
                                        "white": ImageTk.PhotoImage(white_img)}
 
+
         def on_click(event)-> None:
             """This function runs on every click. DO NOT CALL ELSEWHERE
 
@@ -226,6 +229,10 @@ class FourDimGUI(FourDimChess):
             y_i = ((y- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             clickpos = (x_o, y_o, x_i, y_i)
             
+            # check for out of bounds clicking
+            if max(clickpos) >= self.board_size or min(clickpos) < 0:
+                return None
+            
             # handle moving
             if self._previous_pos is None:
                 self._previous_pos = clickpos
@@ -238,7 +245,7 @@ class FourDimGUI(FourDimChess):
                     self._previous_pos = None
                 # if colour is correct, draw an overlay of legal moves
                 elif piece.get_value() is not None:
-                    legal_moves = self._moves.get_legal_moves(piece, clickpos)
+                    legal_moves = self._board.get_legal_moves(clickpos)
                     for pos in legal_moves:
                         y0, x0 = self.pixel_from_pos(pos) 
                         self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
@@ -386,10 +393,12 @@ class FourDimGUI(FourDimChess):
         y = (self.pad + self.board_size * self._tile_size) * y_o + self._tile_size * y_i + self.pad
         return (y, x)
 
+
     def toggle_click(self):
         """Toggle wether the on_click function should run on clicks
         """
         self._can_click = (not self._can_click)
+
 
     def start(self):
         """Run the game. This halts all code after the call, untill the game window is closed.
