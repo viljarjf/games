@@ -1,9 +1,7 @@
 import numpy as np
-import tkinter
 from enum import IntEnum
 from typing import Tuple
 
-from numpy.lib.shape_base import tile
 
 class TileState(IntEnum):
 
@@ -34,7 +32,7 @@ class MineSweeper:
         np.random.shuffle(self._minemap)
         self._minemap = self._minemap.reshape(self._shape)
 
-        self._current_game_state = np.zeros(self._shape) + TileState.unchecked
+        self._current_game_state = np.zeros(self._shape, dtype = np.int32) + TileState.unchecked
     
 
     def get_tile_state(self, pos: Tuple[int, int]) -> TileState:
@@ -81,13 +79,9 @@ class MineSweeper:
 
 
     def test(self):
-        print(self._minemap)
+        print(self._minemap.astype(int))
         print()
         print(self._current_game_state)
-        s = self.flip_tile((3,3))
+        print(self.flip_tile((3,3)))
         print(self._current_game_state)
-        print(s)
 
-
-game = MineSweeper(10, 10, 10)
-game.test()
