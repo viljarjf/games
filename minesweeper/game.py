@@ -26,11 +26,7 @@ class MineSweeper:
         self._shape = self._height, self._width = height, width
         self._mine_amount = mines
 
-        # let's make a whacky initialization method shall we?
-        self._minemap = np.zeros(self._shape).astype(bool).flatten()
-        self._minemap[:mines] = True
-        np.random.shuffle(self._minemap)
-        self._minemap = self._minemap.reshape(self._shape)
+        self._minemap = None
 
         self._current_game_state = np.zeros(self._shape, dtype = np.int32) + TileState.unchecked
     
@@ -63,8 +59,18 @@ class MineSweeper:
             elif state == TileState.flagged:
                 return False
 
+        # if this is the first click, ensure that it is not a bomb
+        if self._minemap is None:
+            # let's make a whacky initialization method shall we?
+            self._minemap = np.zeros(self._shape).astype(bool).flatten()
+            self._minemap[:self._mine_amount] = True
+            np.random.shuffle(self._minemap)
+            _pos = self._height*pos[0] + pos[1]
+            while self._minemap[_pos]:
+                np.random.shuffle(self._minemap)
+            self._minemap = self._minemap.reshape(self._shape)
+                
         is_flipped = (self._current_game_state[pos] >= 0)
-
 
         if (is_bomb := self._flip_single_tile(pos)) and not is_flipped:
             return True
@@ -100,12 +106,3 @@ class MineSweeper:
             self._current_game_state[pos] = TileState.flagged
         elif self._current_game_state[pos] == TileState.flagged:
             self._current_game_state[pos] = TileState.unchecked
-
-
-    def test(self):
-        print(self._minemap.astype(int))
-        print()
-        print(self._current_game_state)
-        print(self.flip_tile((3,3)))
-        print(self._current_game_state)
-

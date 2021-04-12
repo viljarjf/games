@@ -20,6 +20,7 @@ class MineSweeperTkinter(game.MineSweeper):
     def __init__(self, height: int, width: int, bombs: int):
 
         super().__init__(height, width, bombs)
+        self._prev_state = self._current_game_state.copy()
 
         self._tilesize = 20
         self._padding = 2
@@ -49,8 +50,6 @@ class MineSweeperTkinter(game.MineSweeper):
             data[...][white_areas.T] = hex2rgb(state.value)
             return Image.fromarray(data)
 
-        # if only programming languages had a feature where you cluld loop through things
-
         # bomb
         bomb_image = Image.open(f"{dirname}/graphics/bomb.png")
         bomb_image = bomb_image.convert("RGB")
@@ -68,7 +67,6 @@ class MineSweeperTkinter(game.MineSweeper):
             self._graphics[game.TileState(i)] = ImageTk.PhotoImage(replace_color(numbers_image_arr[:, 20*(i-1):20*i, :], TileColor.checked))
 
 
-        self._imagemap = np.zeros((self._shape))
         self._tilemap = np.zeros((self._shape))
         for y in range(height):
             for x in range(width):
@@ -87,7 +85,6 @@ class MineSweeperTkinter(game.MineSweeper):
             y = _y // (self._padding*2 + self._tilesize)
 
             self.flag_tile((y, x))
-            print(self.get_tile_state((y, x)))
             refresh()
             
         
@@ -105,25 +102,27 @@ class MineSweeperTkinter(game.MineSweeper):
         def refresh():
             for y in range(self._height):
                 for x in range(self._width):
-                    self._canvas.delete(self._tilemap[y, x])
-                    self._tilemap[y, x] = self._canvas.create_rectangle(
-                        x * (self._tilesize + 2*self._padding) + self._padding, 
-                            y * (self._tilesize + 2*self._padding) + self._padding,
-                            (x+1) * (self._tilesize + 2*self._padding) + self._padding, 
-                            (y+1) * (self._tilesize + 2*self._padding) + self._padding,
-                            fill = self.tilestate_to_color(self.get_tile_state((y, x)))
-                    )
-                    if self._imagemap[y, x] != 0:
-                        self._canvas.delete(self._imagemap[y, x])
-                    if (state:= self.get_tile_state((y, x))) not in [game.TileState.unchecked, game.TileState.none]:
-                        self._imagemap[y, x] = self._canvas.create_image(
-                            (
-                                2*self._padding + x*(2*self._padding + self._tilesize),
-                                2*self._padding + y*(2*self._padding + self._tilesize)
-                            ),
-                            image = self._graphics[state],
-                            anchor = tk.NW
-                        )
+                    if self._current_game_state[y, x] != self._prev_state[y, x]:
+                        self._canvas.delete(self._tilemap[y, x])
+                        if (state:= self.get_tile_state((y, x))) not in [game.TileState.unchecked, game.TileState.none]:
+                            self._tilemap[y, x] = self._canvas.create_image(
+                                (
+                                    2*self._padding + x*(2*self._padding + self._tilesize),
+                                    2*self._padding + y*(2*self._padding + self._tilesize)
+                                ),
+                                image = self._graphics[state],
+                                anchor = tk.NW
+                            )
+                        else:
+                            self._tilemap[y, x] = self._canvas.create_rectangle(
+                                x * (self._tilesize + 2*self._padding) + self._padding, 
+                                y * (self._tilesize + 2*self._padding) + self._padding,
+                                (x+1) * (self._tilesize + 2*self._padding) + self._padding, 
+                                (y+1) * (self._tilesize + 2*self._padding) + self._padding,
+                                fill = self.tilestate_to_color(self.get_tile_state((y, x)))
+                            )
+                        
+            self._prev_state = self._current_game_state.copy()
 
         self._root.bind("<Button-1>", on_leftclick)
         self._root.bind("<Button-3>", on_rightclick)
