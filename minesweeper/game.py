@@ -1,6 +1,8 @@
 import numpy as np
 from enum import IntEnum
-from typing import Tuple
+from typing import Tuple, List
+
+from numpy.core.numeric import count_nonzero
 
 
 class TileState(IntEnum):
@@ -33,6 +35,9 @@ class MineSweeper:
 
     def get_tile_state(self, pos: Tuple[int, int]) -> TileState:
         return TileState(self._current_game_state[pos])
+
+    def get_state(self) -> np.ndarray:
+        return self._current_game_state.copy()
     
 
     def _flip_single_tile(self, pos: Tuple[int, int]) -> bool:
@@ -112,3 +117,66 @@ class MineSweeper:
             for x in range(self._width):
                 if self._minemap[y, x]:
                     self._flip_single_tile((y, x))
+    
+    def win_check(self) -> bool:
+        return (
+            np.count_nonzero(self._current_game_state == TileState.unchecked)
+            + np.count_nonzero(self._current_game_state == TileState.flagged)
+            ) == self._mine_amount
+
+    def get_unchecked_amount(self, pos: Tuple[int, int]) -> int:
+        x_max, y_max = self._shape
+        y, x = pos
+        return np.count_nonzero(self._current_game_state[
+            max(0, y-1) : min(y_max, y+2),
+            max(0, x-1) : min(x_max, x+2)
+            ] == TileState.unchecked)
+    
+    def get_flagged_amount(self, pos: Tuple[int, int]) -> int:
+        x_max, y_max = self._shape
+        y, x = pos
+        return np.count_nonzero(self._current_game_state[
+            max(0, y-1) : min(y_max, y+2),
+            max(0, x-1) : min(x_max, x+2)
+            ] == TileState.flagged)
+    
+    def get_moves(self) -> List[Tuple[int, int]]:
+        y_max, x_max = self._shape
+        game_state = self.get_state()
+        p = np.zeros((*self._shape, 8))
+        # we need to loop through twice. 
+        # first to find the maximum probability of being a bomb,
+        # next to compare it with each
+        for y in range(y_max):
+            for x in range(x_max):
+                # for each tile, loop through its neighbours
+                if (n := game_state[y, x]) > 0:
+                    i = 0
+                    n_bombs = n - self.get_flagged_amount((y, x))
+                    n_unchecked = self.get_unchecked_amount((y, x))
+                    for _y in range(max(0, y-1) , min(y_max, y+2)):
+                        for _x in range(max(0, x-1), min(x_max, x+2)):
+                            if (_y, _x) == (y,x):
+                                continue
+                            if game_state[_y, _x] == TileState.unchecked:
+                                p[_y, _x, i] = round(n_bombs / n_unchecked, 2)
+                            else:
+                                p[_y, _x, i] = 0
+                            i += 1
+        print("Probability of being right:", m := p.max())
+        res = []
+        for y in range(p.shape[0]):
+            for x in range(p.shape[1]):
+                if np.max(p[y, x]) == m:
+                    res.append((y, x))
+                    if m < 1:
+                        return res
+        return res
+    
+    def _flip_all_fulfilled(self):
+        """Open all tiles that have the correct amount of flagged tiles
+        """
+        for y in range(self._height):
+            for x in range(self._width):
+                if self._current_game_state[y, x] == self.get_flagged_amount((y, x)):
+                    self.flip_tile((y, x))

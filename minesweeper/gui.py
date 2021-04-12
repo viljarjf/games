@@ -105,8 +105,11 @@ class MineSweeperTkinter(game.MineSweeper):
                 self._root.bind("<Button-3>", lambda event: None)
             
             refresh()
-        
-        
+            if self.win_check():
+                print("You won!")
+                self._root.bind("<Button-1>", lambda event: None)
+                self._root.bind("<Button-3>", lambda event: None)
+
         def refresh():
             """refreshes all tiles that has been changed since last call
             """
@@ -135,7 +138,8 @@ class MineSweeperTkinter(game.MineSweeper):
                             )
                         
             self._prev_state = self._current_game_state.copy()
-
+    
+        self._refresh = refresh
         self._root.bind("<Button-1>", on_leftclick)
         self._root.bind("<Button-3>", on_rightclick)
 
@@ -152,5 +156,19 @@ class MineSweeperTkinter(game.MineSweeper):
         
 
     def run(self):
+        self._root.mainloop()
+    
+    def run_solver(self):
+
+        def callback(event):
+            self._flip_all_fulfilled()
+            if not self.win_check():
+                for pos in self.get_moves():
+                    self.flag_tile(pos)
+            else:
+                print("\"You\" won!")
+            self._refresh()
+
+        self._root.bind("<space>", callback)
         self._root.mainloop()
 
