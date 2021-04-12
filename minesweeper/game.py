@@ -106,3 +106,9 @@ class MineSweeper:
             self._current_game_state[pos] = TileState.flagged
         elif self._current_game_state[pos] == TileState.flagged:
             self._current_game_state[pos] = TileState.unchecked
+    
+    def flip_all_mines(self):
+        for y in range(self._height):
+            for x in range(self._width):
+                if self._minemap[y, x]:
+                    self._flip_single_tile((y, x))

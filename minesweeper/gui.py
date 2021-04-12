@@ -22,9 +22,11 @@ class MineSweeperTkinter(game.MineSweeper):
         super().__init__(height, width, bombs)
         self._prev_state = self._current_game_state.copy()
 
+        # graphics setup
         self._tilesize = 20
         self._padding = 2
 
+        # tkinter setup
         self._root = tk.Tk()
         self._canvas = tk.Canvas(
             self._root, 
@@ -33,10 +35,10 @@ class MineSweeperTkinter(game.MineSweeper):
         )
         self._canvas.pack()
 
+        # load the graphics into a dict
         dirname = os.path.dirname(__file__)
-
         self._graphics = dict()
-
+        # functions to create our images with their correct colors
         hex2rgb = lambda s: (int(s[1:3], 16), int(s[3:5], 16), int(s[5:7], 16))
         def replace_color(img: Image, state: TileColor) -> Image:
             if not isinstance(img, np.ndarray):
@@ -66,8 +68,9 @@ class MineSweeperTkinter(game.MineSweeper):
         for i in range(1, 9):
             self._graphics[game.TileState(i)] = ImageTk.PhotoImage(replace_color(numbers_image_arr[:, 20*(i-1):20*i, :], TileColor.checked))
 
-
+        # array for storing IDs of tkinter objects
         self._tilemap = np.zeros((self._shape))
+        # initialize the board with unchecked tiles
         for y in range(height):
             for x in range(width):
                 self._tilemap[y, x] = self._canvas.create_rectangle(
@@ -78,6 +81,7 @@ class MineSweeperTkinter(game.MineSweeper):
                     fill = TileColor.unchecked.value
                     )
         
+        # click callbacks
         def on_rightclick(event):
             _x, _y = event.x, event.y
 
@@ -96,14 +100,21 @@ class MineSweeperTkinter(game.MineSweeper):
 
             if self.flip_tile((y, x)):
                 print("You lost")
-            # delete the old and create a new rectangle
+                self.flip_all_mines()
+                self._root.bind("<Button-1>", lambda event: None)
+                self._root.bind("<Button-3>", lambda event: None)
+            
             refresh()
-
+        
+        
         def refresh():
+            """refreshes all tiles that has been changed since last call
+            """
             for y in range(self._height):
                 for x in range(self._width):
                     if self._current_game_state[y, x] != self._prev_state[y, x]:
                         self._canvas.delete(self._tilemap[y, x])
+                        # tile needs an image:
                         if (state:= self.get_tile_state((y, x))) not in [game.TileState.unchecked, game.TileState.none]:
                             self._tilemap[y, x] = self._canvas.create_image(
                                 (
@@ -113,6 +124,7 @@ class MineSweeperTkinter(game.MineSweeper):
                                 image = self._graphics[state],
                                 anchor = tk.NW
                             )
+                        # no image necessary:
                         else:
                             self._tilemap[y, x] = self._canvas.create_rectangle(
                                 x * (self._tilesize + 2*self._padding) + self._padding, 
