@@ -41,6 +41,9 @@ class MineSweeper:
     
 
     def _flip_single_tile(self, pos: Tuple[int, int]) -> bool:
+        if self._current_game_state[pos] == TileState.flagged:
+            return False
+        
         if self._minemap[pos]:
             self._current_game_state[pos] = TileState.bomb
             return True
@@ -127,10 +130,11 @@ class MineSweeper:
     def get_unchecked_amount(self, pos: Tuple[int, int]) -> int:
         x_max, y_max = self._shape
         y, x = pos
-        return np.count_nonzero(self._current_game_state[
+        sel = self._current_game_state[
             max(0, y-1) : min(y_max, y+2),
             max(0, x-1) : min(x_max, x+2)
-            ] == TileState.unchecked)
+            ]
+        return np.count_nonzero(sel == TileState.unchecked)
     
     def get_flagged_amount(self, pos: Tuple[int, int]) -> int:
         x_max, y_max = self._shape
@@ -153,7 +157,8 @@ class MineSweeper:
                 if (n := game_state[y, x]) > 0:
                     i = 0
                     n_bombs = n - self.get_flagged_amount((y, x))
-                    n_unchecked = self.get_unchecked_amount((y, x))
+                    if (n_unchecked := self.get_unchecked_amount((y, x))) < 1:
+                        continue
                     for _y in range(max(0, y-1) , min(y_max, y+2)):
                         for _x in range(max(0, x-1), min(x_max, x+2)):
                             if (_y, _x) == (y,x):
@@ -170,13 +175,16 @@ class MineSweeper:
                 if np.max(p[y, x]) == m:
                     res.append((y, x))
                     if m < 1:
+                        print(res[0])
                         return res
         return res
     
-    def _flip_all_fulfilled(self):
+    def _flip_all_fulfilled(self) -> bool:
         """Open all tiles that have the correct amount of flagged tiles
         """
+        res = [False]
         for y in range(self._height):
             for x in range(self._width):
                 if self._current_game_state[y, x] == self.get_flagged_amount((y, x)):
-                    self.flip_tile((y, x))
+                    res.append(self.flip_tile((y, x)))
+        return max(res)

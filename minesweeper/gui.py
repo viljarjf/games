@@ -161,10 +161,16 @@ class MineSweeperTkinter(game.MineSweeper):
     def run_solver(self):
 
         def callback(event):
-            self._flip_all_fulfilled()
+            if self._flip_all_fulfilled():
+                print("\"You\" lost")
+                self._root.bind("<Button-1>", lambda event: None)
+                self._root.bind("<Button-3>", lambda event: None)
+                self._root.bind("<space>", lambda event: None)
             if not self.win_check():
                 for pos in self.get_moves():
                     self.flag_tile(pos)
+                        
+                        
             else:
                 print("\"You\" won!")
             self._refresh()
