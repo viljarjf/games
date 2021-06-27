@@ -1,4 +1,5 @@
 import numpy as np
+from pygame import constants
 from . import config
 
 class Level:
@@ -11,7 +12,7 @@ class Level:
         self.y_offset: int = 0
     
     def get_floor(self, x: int):
-        return 40 - np.where(self.levelmap[:, x])[0][0]
+        return config.WINDOW_HEIGHT_TILES - np.where(self.levelmap[:, x])[0][0]
     
     def view(self):
         return self.levelmap[

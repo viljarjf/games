@@ -3,7 +3,7 @@ from typing import Tuple
 
 @dataclass
 class Options:
-    max_fps: int = 60
+    max_fps: int = 60.3
     min_timedelta: float = field(init=False)
 
     height: int = 800

@@ -40,7 +40,7 @@ class Game:
         elif event.type == pygame.KEYDOWN:
             for fps in range(1,10):       
                 if event.unicode == str(fps):
-                    self._options.set_fps(10*fps)
+                    self._options.set_fps(10.05*fps)
             if event.key == pygame.K_LEFT:
                 self._player.direction -= 1
             elif event.key == pygame.K_RIGHT:
@@ -56,11 +56,23 @@ class Game:
 
 
     def gameloop(self):
-        self._player.move()
-        min_y = self.level.get_floor(round(self._player.x / self._options.tilesize)) * self._options.tilesize
-        self._player.set_ground(min_y)
+        def game_logic(timespan):
+            logic_start = time.time()
+            self._player.move(timespan)
+            min_y = self.level.get_floor(round(self._player.x / self._options.tilesize)) * self._options.tilesize
+            self._player.set_ground(min_y)
+            return time.time() - logic_start
+
+        logic_timedelta = game_logic(time.time() - self._render_start)
         timedelta = time.time() - self._render_start
+
+        # if the timedelta allows it, do more game stuff without drawing
+        while timedelta + logic_timedelta < self._options.min_timedelta:
+            logic_timedelta = game_logic(logic_timedelta)
+            timedelta = time.time() - self._render_start
+
         if timedelta < self._options.min_timedelta:
+            # wait for next frame
             time.sleep(self._options.min_timedelta - timedelta)
         timedelta = time.time() - self._render_start
         self._fps = 1/timedelta
@@ -96,12 +108,12 @@ class Game:
 
         #render fps
         self._font.render_to(self._screen, (40, 50), f"{self._fps = :.2f}", (0, 0, 0))
-
+        
         pygame.display.flip()
 
 
     def first_gameloop(self):
-        self._fps = 0
+        self._fps = 1
 
 
     def cleanup(self):
