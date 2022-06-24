@@ -1,9 +1,12 @@
-from .tile import Tile
-from .piece import Piece, legal_names
-
 import copy
-import numpy as np
 import random
+from typing import Iterator, Tuple
+
+import numpy as np
+
+from chess.assets.piece import Piece, LEGAL_NAMES
+from chess.assets.tile import Tile
+
 
 ### Chess board
 class Board:
@@ -21,10 +24,24 @@ class Board:
         self._size = board_size
 
         shape = [self._size] * self._dim
-        board = [Tile() for n in np.zeros(shape).flatten()]
+        board = [Tile() for _ in np.zeros(shape).flatten()]
         
         self._tiles = np.array(board).reshape(shape)
     
+    def get_iterator(self) -> Iterator[Tuple]:
+        """Returns a generator/iterator/whatever with board positions
+
+        Returns:
+            Iterator[Tuple]: each element is a tuple index
+        """
+        with np.nditer(
+            self._tiles, 
+            flags=['multi_index', "refs_ok"], 
+            op_flags=['readonly']
+            ) as it:
+            for _ in it:
+                yield it.multi_index
+        
     def get_board(self) -> np.array:
         """return a copy of the array of tiles
 
@@ -109,7 +126,7 @@ class Board:
     def init_random(self):
         """Place a couple pieces randomly. Delete any previous pieces
         """
-        l = legal_names[:-1] # exclude superqueen
+        l = LEGAL_NAMES[:-1] # exclude superqueen
         it = np.nditer(self._tiles, flags = ["refs_ok", "multi_index"], op_flags =["readwrite"])
         for n in it:
             if random.randint(1, 10) == 10:
@@ -129,10 +146,10 @@ class Board:
             # pawns
             pawn = Piece()
             pawn.set_from_str("Pawn", color)
-            start = 3*color 
+            start = color * (self._dim - 1) 
             for x_o in range(4):
                 for x_i in range(4):
-                    self._tiles[x_o, start, x_i, 1 + color].set_piece(pawn)
+                    self._tiles[start, 1 + color, x_o, x_i].set_piece(pawn)
         
             # the rest
             R = Piece()
@@ -147,47 +164,115 @@ class Board:
             Q.set_from_str("Queen", color)
             if color:
                 # white
-                self._tiles[0, 3, 0, 3].set_piece(R)
-                self._tiles[0, 3, 3, 3].set_piece(R)
+                self._tiles[3, 3, 0, 0].set_piece(R)
                 self._tiles[3, 3, 0, 3].set_piece(R)
+                self._tiles[3, 3, 3, 0].set_piece(R)
                 self._tiles[3, 3, 3, 3].set_piece(R)
 
-                self._tiles[0, 3, 1, 3].set_piece(Kn)
-                self._tiles[0, 3, 2, 3].set_piece(Kn)
-                self._tiles[3, 3, 1, 3].set_piece(Kn)
-                self._tiles[3, 3, 2, 3].set_piece(Kn)
+                self._tiles[3, 3, 0, 1].set_piece(Kn)
+                self._tiles[3, 3, 0, 2].set_piece(Kn)
+                self._tiles[3, 3, 3, 1].set_piece(Kn)
+                self._tiles[3, 3, 3, 2].set_piece(Kn)
 
-                self._tiles[1, 3, 0, 3].set_piece(B)
-                self._tiles[1, 3, 3, 3].set_piece(B)
-                self._tiles[2, 3, 0, 3].set_piece(B)
-                self._tiles[2, 3, 3, 3].set_piece(B)
+                self._tiles[3, 3, 1, 0].set_piece(B)
+                self._tiles[3, 3, 1, 3].set_piece(B)
+                self._tiles[3, 3, 2, 0].set_piece(B)
+                self._tiles[3, 3, 2, 3].set_piece(B)
 
-                self._tiles[1, 3, 1, 3].set_piece(K)
-                self._tiles[2, 3, 2, 3].set_piece(K)
+                self._tiles[3, 3, 1, 1].set_piece(K)
+                self._tiles[3, 3, 2, 2].set_piece(K)
 
-                self._tiles[1, 3, 2, 3].set_piece(Q)
-                self._tiles[2, 3, 1, 3].set_piece(Q)
+                self._tiles[3, 3, 1, 2].set_piece(Q)
+                self._tiles[3, 3, 2, 1].set_piece(Q)
             else:
                 # black
                 self._tiles[0, 0, 0, 0].set_piece(R)
+                self._tiles[0, 0, 0, 3].set_piece(R)
                 self._tiles[0, 0, 3, 0].set_piece(R)
-                self._tiles[3, 0, 0, 0].set_piece(R)
-                self._tiles[3, 0, 3, 0].set_piece(R)
+                self._tiles[0, 0, 3, 3].set_piece(R)
 
-                self._tiles[0, 0, 1, 0].set_piece(Kn)
-                self._tiles[0, 0, 2, 0].set_piece(Kn)
-                self._tiles[3, 0, 1, 0].set_piece(Kn)
-                self._tiles[3, 0, 2, 0].set_piece(Kn)
+                self._tiles[0, 0, 0, 1].set_piece(Kn)
+                self._tiles[0, 0, 0, 2].set_piece(Kn)
+                self._tiles[0, 0, 3, 1].set_piece(Kn)
+                self._tiles[0, 0, 3, 2].set_piece(Kn)
 
-                self._tiles[1, 0, 0, 0].set_piece(B)
-                self._tiles[1, 0, 3, 0].set_piece(B)
-                self._tiles[2, 0, 0, 0].set_piece(B)
-                self._tiles[2, 0, 3, 0].set_piece(B)
+                self._tiles[0, 0, 1, 0].set_piece(B)
+                self._tiles[0, 0, 1, 3].set_piece(B)
+                self._tiles[0, 0, 2, 0].set_piece(B)
+                self._tiles[0, 0, 2, 3].set_piece(B)
 
-                self._tiles[1, 0, 1, 0].set_piece(K)
-                self._tiles[2, 0, 2, 0].set_piece(K)
+                self._tiles[0, 0, 1, 1].set_piece(K)
+                self._tiles[0, 0, 2, 2].set_piece(K)
 
-                self._tiles[1, 0, 2, 0].set_piece(Q)
-                self._tiles[2, 0, 1, 0].set_piece(Q)
+                self._tiles[0, 0, 1, 2].set_piece(Q)
+                self._tiles[0, 0, 2, 1].set_piece(Q)
 
         # [R, Kn, T, R], [B, K, Q, B], [B, Q, K, B], [R, T, Kn, R]
+
+
+    def init_2d(self):
+        """Initialize the board for a standard game
+        """
+        if self._dim != 2 or self._size != 8:
+            raise IndexError("Board size must be 8 and dimension must be 2")
+       
+        # pawns
+        pawn = Piece()
+        pawn.set_from_str("Pawn", 0)
+        for x in range(8):
+            self._tiles[1, x].set_piece(pawn)
+        # pawns
+        pawn = Piece()
+        pawn.set_from_str("Pawn", 1)
+        for x in range(8):
+            self._tiles[6, x].set_piece(pawn)
+        
+        # the rest
+        R = Piece()
+        R.set_from_str("Rook", 1)
+        Kn = Piece()
+        Kn.set_from_str("Knight", 1)
+        B = Piece()
+        B.set_from_str("Bishop", 1)
+        K = Piece()
+        K.set_from_str("King", 1)
+        Q = Piece()
+        Q.set_from_str("Queen", 1)
+        # white
+        self._tiles[7, 7].set_piece(R)
+        self._tiles[7, 6].set_piece(Kn)
+        self._tiles[7, 5].set_piece(B)
+        self._tiles[7, 4].set_piece(Q)
+        self._tiles[7, 3].set_piece(K)
+        self._tiles[7, 2].set_piece(B)
+        self._tiles[7, 1].set_piece(Kn)
+        self._tiles[7, 0].set_piece(R)
+
+        #black
+        R = Piece()
+        R.set_from_str("Rook", 0)
+        Kn = Piece()
+        Kn.set_from_str("Knight", 0)
+        B = Piece()
+        B.set_from_str("Bishop", 0)
+        K = Piece()
+        K.set_from_str("King", 0)
+        Q = Piece()
+        Q.set_from_str("Queen", 0)
+        # white
+        self._tiles[0, 7].set_piece(R)
+        self._tiles[0, 6].set_piece(Kn)
+        self._tiles[0, 5].set_piece(B)
+        self._tiles[0, 4].set_piece(Q)
+        self._tiles[0, 3].set_piece(K)
+        self._tiles[0, 2].set_piece(B)
+        self._tiles[0, 1].set_piece(Kn)
+        self._tiles[0, 0].set_piece(R)
+
+    def __str__(self):
+        if self._dim != 2:
+            return self
+        line = "+----" * 8 + "+\n"
+        row = "| {} " * 8 + "|\n"
+        board = (line + row) * 8 + line
+        return board.format(*[self._tiles[pos] for pos in self.get_iterator()])

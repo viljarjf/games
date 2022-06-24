@@ -167,7 +167,7 @@ class MineSweeperTkinter(game.MineSweeper):
                 self._root.bind("<Button-3>", lambda event: None)
                 self._root.bind("<space>", lambda event: None)
             if not self.win_check():
-                for pos in self.get_moves():
+                for pos in self.get_legal_moves():
                     self.flag_tile(pos)
                         
                         
