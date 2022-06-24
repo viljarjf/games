@@ -1,6 +1,5 @@
 from chess.games.abstract.n_dim_chess_gui import NDChessGUI
 
-
 class FourDChessGUI(NDChessGUI):
     """4D Chess, implemented with tkinter
 

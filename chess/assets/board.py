@@ -1,10 +1,12 @@
-from typing import Iterator, Tuple
-from .tile import Tile
-from .piece import Piece, legal_names
-
 import copy
-import numpy as np
 import random
+from typing import Iterator, Tuple
+
+import numpy as np
+
+from chess.assets.piece import Piece, LEGAL_NAMES
+from chess.assets.tile import Tile
+
 
 ### Chess board
 class Board:
@@ -124,7 +126,7 @@ class Board:
     def init_random(self):
         """Place a couple pieces randomly. Delete any previous pieces
         """
-        l = legal_names[:-1] # exclude superqueen
+        l = LEGAL_NAMES[:-1] # exclude superqueen
         it = np.nditer(self._tiles, flags = ["refs_ok", "multi_index"], op_flags =["readwrite"])
         for n in it:
             if random.randint(1, 10) == 10:

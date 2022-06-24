@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image, ImageColor, ImageOps, ImageTk
 
 from chess.games.abstract.n_dim_chess import NDChess
-from chess.piece import Piece, legal_names
+from chess.assets.piece import Piece, LEGAL_NAMES
 
 
 class NDChessGUI(NDChess, ABC):
@@ -75,7 +75,7 @@ class NDChessGUI(NDChess, ABC):
                 vals: imageTk.PhotoImage instances
         """
         dirname = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        for p in legal_names:
+        for p in LEGAL_NAMES:
             if p == "Superqueen":
                 img = Image.open(f"{dirname}/graphics/Queen.png")
             else:

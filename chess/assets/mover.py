@@ -1,10 +1,11 @@
-from .piece import Piece
-
 import copy
-import random
 import itertools
+import random
 
-class Moves:
+from chess.assets.piece import Piece
+
+
+class Mover:
     """Class for handling the available moves for a chess piece
 
     Args:

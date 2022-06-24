@@ -1,6 +1,5 @@
-from chess.board import Board
-from chess.moves import Moves
-
+from chess.assets.board import Board
+from chess.assets.mover import Mover
 
 class NDChess:
     """
@@ -22,7 +21,7 @@ class NDChess:
 
         # set up some stuff to enable moving
         self._turn = False
-        self._moves = Moves(self.dimension, self.board_size)
+        self._moves = Mover(self.dimension, self.board_size)
     
     def get_legal_moves(self, pos: int) -> list[tuple]:
         current_piece = self._board.get_tile(pos).get_piece()
