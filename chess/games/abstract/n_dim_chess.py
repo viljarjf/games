@@ -42,18 +42,22 @@ class NDChess:
 
         # pawns are stupid
         # forward:
+        forward_dirs = self.dimension // 2
         moves = self._moves.get_moves(current_piece, pos)
-        for move in moves[0]:
-            piece = self._board.get_tile(move).get_piece()
-            # only allowed if empty
-            if piece.get_value() is None:
-                legal_moves.append(move)
-            else:
-                break
+        for forward_moves in moves[:forward_dirs]:
+            for move in forward_moves:
+                piece = self._board.get_tile(move).get_piece()
+                # only allowed if empty
+                if piece.get_value() is None:
+                    legal_moves.append(move)
+                else:
+                    break
         # sides:
-        for move in moves[1:]:
+        for move in moves[forward_dirs:]:
+            # skip if empty
             if not move:
                 continue
+            # we know there is only one move in each sub-list
             move = move[0]
             piece = self._board.get_tile(move).get_piece()
             # only allowed if enemy

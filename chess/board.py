@@ -144,10 +144,10 @@ class Board:
             # pawns
             pawn = Piece()
             pawn.set_from_str("Pawn", color)
-            start = 3*color 
+            start = color * (self._dim - 1) 
             for x_o in range(4):
                 for x_i in range(4):
-                    self._tiles[x_o, start, x_i, 1 + color].set_piece(pawn)
+                    self._tiles[start, 1 + color, x_o, x_i].set_piece(pawn)
         
             # the rest
             R = Piece()
@@ -162,48 +162,48 @@ class Board:
             Q.set_from_str("Queen", color)
             if color:
                 # white
-                self._tiles[0, 3, 0, 3].set_piece(R)
-                self._tiles[0, 3, 3, 3].set_piece(R)
+                self._tiles[3, 3, 0, 0].set_piece(R)
                 self._tiles[3, 3, 0, 3].set_piece(R)
+                self._tiles[3, 3, 3, 0].set_piece(R)
                 self._tiles[3, 3, 3, 3].set_piece(R)
 
-                self._tiles[0, 3, 1, 3].set_piece(Kn)
-                self._tiles[0, 3, 2, 3].set_piece(Kn)
-                self._tiles[3, 3, 1, 3].set_piece(Kn)
-                self._tiles[3, 3, 2, 3].set_piece(Kn)
+                self._tiles[3, 3, 0, 1].set_piece(Kn)
+                self._tiles[3, 3, 0, 2].set_piece(Kn)
+                self._tiles[3, 3, 3, 1].set_piece(Kn)
+                self._tiles[3, 3, 3, 2].set_piece(Kn)
 
-                self._tiles[1, 3, 0, 3].set_piece(B)
-                self._tiles[1, 3, 3, 3].set_piece(B)
-                self._tiles[2, 3, 0, 3].set_piece(B)
-                self._tiles[2, 3, 3, 3].set_piece(B)
+                self._tiles[3, 3, 1, 0].set_piece(B)
+                self._tiles[3, 3, 1, 3].set_piece(B)
+                self._tiles[3, 3, 2, 0].set_piece(B)
+                self._tiles[3, 3, 2, 3].set_piece(B)
 
-                self._tiles[1, 3, 1, 3].set_piece(K)
-                self._tiles[2, 3, 2, 3].set_piece(K)
+                self._tiles[3, 3, 1, 1].set_piece(K)
+                self._tiles[3, 3, 2, 2].set_piece(K)
 
-                self._tiles[1, 3, 2, 3].set_piece(Q)
-                self._tiles[2, 3, 1, 3].set_piece(Q)
+                self._tiles[3, 3, 1, 2].set_piece(Q)
+                self._tiles[3, 3, 2, 1].set_piece(Q)
             else:
                 # black
                 self._tiles[0, 0, 0, 0].set_piece(R)
+                self._tiles[0, 0, 0, 3].set_piece(R)
                 self._tiles[0, 0, 3, 0].set_piece(R)
-                self._tiles[3, 0, 0, 0].set_piece(R)
-                self._tiles[3, 0, 3, 0].set_piece(R)
+                self._tiles[0, 0, 3, 3].set_piece(R)
 
-                self._tiles[0, 0, 1, 0].set_piece(Kn)
-                self._tiles[0, 0, 2, 0].set_piece(Kn)
-                self._tiles[3, 0, 1, 0].set_piece(Kn)
-                self._tiles[3, 0, 2, 0].set_piece(Kn)
+                self._tiles[0, 0, 0, 1].set_piece(Kn)
+                self._tiles[0, 0, 0, 2].set_piece(Kn)
+                self._tiles[0, 0, 3, 1].set_piece(Kn)
+                self._tiles[0, 0, 3, 2].set_piece(Kn)
 
-                self._tiles[1, 0, 0, 0].set_piece(B)
-                self._tiles[1, 0, 3, 0].set_piece(B)
-                self._tiles[2, 0, 0, 0].set_piece(B)
-                self._tiles[2, 0, 3, 0].set_piece(B)
+                self._tiles[0, 0, 1, 0].set_piece(B)
+                self._tiles[0, 0, 1, 3].set_piece(B)
+                self._tiles[0, 0, 2, 0].set_piece(B)
+                self._tiles[0, 0, 2, 3].set_piece(B)
 
-                self._tiles[1, 0, 1, 0].set_piece(K)
-                self._tiles[2, 0, 2, 0].set_piece(K)
+                self._tiles[0, 0, 1, 1].set_piece(K)
+                self._tiles[0, 0, 2, 2].set_piece(K)
 
-                self._tiles[1, 0, 2, 0].set_piece(Q)
-                self._tiles[2, 0, 1, 0].set_piece(Q)
+                self._tiles[0, 0, 1, 2].set_piece(Q)
+                self._tiles[0, 0, 2, 1].set_piece(Q)
 
         # [R, Kn, T, R], [B, K, Q, B], [B, Q, K, B], [R, T, Kn, R]
 

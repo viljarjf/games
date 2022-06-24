@@ -55,33 +55,31 @@ class Moves:
             return moves
 
     def _pawn(self, pos: tuple, color: str)-> list[list[tuple]]:
-        if self._dimension == 4:
-            # VERY WRONG, only for testing
-            legal_moves = []
-            for a in range(-1, 2):
-                for b in range(-1, 2):
-                    for c in range(-1, 2):
-                        for d in range(-1, 2):
-                            x1 = pos[0]+a if (pos[0]+a >= 0 and pos[0]+a < self._dimension) else None
-                            x2 = pos[1]+b if (pos[1]+b >= 0 and pos[1]+b < self._dimension) else None
-                            x3 = pos[2]+c if (pos[2]+c >= 0 and pos[2]+c < self._board_size) else None
-                            x4 = pos[3]+d if (pos[3]+d >= 0 and pos[3]+d < self._board_size) else None
-                            move = (x1, x2, x3, x4)
-                            if None in move:
-                                continue
-                            legal_moves.append(move)
-            return [legal_moves]
-        elif self._dimension == 2:
-            legal_moves = []
-            up_or_down = 1 if color == "black" else -1
-            row = 1 if color == "black" else 6
-            if pos[0] == row:
-                legal_moves.append(self._get_moves_in_dir(pos, [up_or_down, 0])[0:2])
+        forward_dir_amount = self._dimension // 2
+        legal_moves = []
+        up_or_down = 1 if color == "black" else -1
+        row = 1 if color == "black" else self._board_size - 2
+
+        # forward
+        for forward_dir in range(forward_dir_amount):
+            dir = [0] * self._dimension
+            dir[forward_dir] = up_or_down
+            if pos[forward_dir] == row:
+                legal_moves.append(self._get_moves_in_dir(pos, dir)[0:2])
             else:
-                legal_moves.append(self._get_moves_in_dir(pos, [up_or_down, 0])[0:1])
-            for dir in [[up_or_down, -1], [up_or_down, 1]]:
                 legal_moves.append(self._get_moves_in_dir(pos, dir)[0:1])
-            return legal_moves
+
+        # sides
+        for forward_dir in range(forward_dir_amount):
+            dir = [0] * self._dimension
+            dir[forward_dir] = up_or_down
+            for side_dir in range(forward_dir_amount, self._dimension):
+                dir[side_dir] = 1
+                legal_moves.append(self._get_moves_in_dir(pos, dir)[0:1])
+                dir[side_dir] = -1
+                legal_moves.append(self._get_moves_in_dir(pos, dir)[0:1])
+                dir[side_dir] = 0
+        return legal_moves
 
     def _king(self, pos: tuple)-> list[list[tuple]]:
         legal_moves = []

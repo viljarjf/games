@@ -124,7 +124,7 @@ class FourDimGUI(FourDimChess):
 
             x_i = ((x- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
             y_i = ((y- self.pad) % (self._tile_size * self.board_size + self.pad)) // self._tile_size
-            clickpos = (x_o, y_o, x_i, y_i)
+            clickpos = (y_o, y_i, x_o, x_i)
             
             # handle moving
             if self._previous_pos is None:
@@ -276,7 +276,7 @@ class FourDimGUI(FourDimChess):
         Returns:
             tuple: (y, x), pixel coordinates of top left corner to the position
         """
-        (x_o, y_o, x_i, y_i) = pos
+        (y_o, y_i, x_o, x_i) = pos
         x = (self.pad + self.board_size * self._tile_size) * x_o + self._tile_size * x_i + self.pad
         y = (self.pad + self.board_size * self._tile_size) * y_o + self._tile_size * y_i + self.pad
         return (y, x)
