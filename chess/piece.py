@@ -100,3 +100,21 @@ class Piece:
         elif self._color == 0:
             return "black"
         return "white"
+
+    def __str__(self):
+        if self._val is None:
+            return "  "
+        elif legal_names.index(self._val) == 0:
+            p = "p"
+        elif legal_names.index(self._val) == 1:
+            p = "k"
+        elif legal_names.index(self._val) == 2:
+            p = "r"
+        elif legal_names.index(self._val) == 3:
+            p = "b"
+        elif legal_names.index(self._val) == 4:
+            p = "Q"
+        elif legal_names.index(self._val) == 5:
+            p = "K"
+
+        return f"{'w' if self._color else 'b'}{p}"

@@ -1,6 +1,8 @@
 from .piece import Piece
+
 import copy
 import random
+import itertools
 
 class Moves:
     """Class for handling the available moves for a chess piece
@@ -14,7 +16,7 @@ class Moves:
         self._dimension = dim
         self._board_size = board_size
 
-    def get_legal_moves(self, piece: Piece, pos: tuple)-> list:
+    def get_moves(self, piece: Piece, pos: tuple)-> list[list[tuple]]:
         """Get a list of all legal moves for a piece, given the dimensions and board size
         Note: Does not take other pieces into account
 
@@ -23,7 +25,9 @@ class Moves:
             pos (tuple): The position vector for the piece
 
         Returns:
-            list: list of tuples (position vectors) of legal moves
+            list: 
+                each element is a list of tuples (position vectors) of legal moves.
+                each list is a direction from the piece.
         """
         if piece.get_value() == "Pawn":
             moves = self._pawn(pos)
@@ -50,24 +54,27 @@ class Moves:
             moves = self._superqueen(pos)
             return moves
 
-    def _pawn(self, pos: tuple)-> list:
-        # VERY WRONG, only for testing
-        legal_moves = []
-        for a in range(-1, 2):
-            for b in range(-1, 2):
-                for c in range(-1, 2):
-                    for d in range(-1, 2):
-                        x1 = pos[0]+a if (pos[0]+a >= 0 and pos[0]+a < self._dimension) else None
-                        x2 = pos[1]+b if (pos[1]+b >= 0 and pos[1]+b < self._dimension) else None
-                        x3 = pos[2]+c if (pos[2]+c >= 0 and pos[2]+c < self._board_size) else None
-                        x4 = pos[3]+d if (pos[3]+d >= 0 and pos[3]+d < self._board_size) else None
-                        move = (x1, x2, x3, x4)
-                        if None in move:
-                            continue
-                        legal_moves.append(move)
-        return legal_moves
+    def _pawn(self, pos: tuple)-> list[list[tuple]]:
+        if self._dimension == 4:
+            # VERY WRONG, only for testing
+            legal_moves = []
+            for a in range(-1, 2):
+                for b in range(-1, 2):
+                    for c in range(-1, 2):
+                        for d in range(-1, 2):
+                            x1 = pos[0]+a if (pos[0]+a >= 0 and pos[0]+a < self._dimension) else None
+                            x2 = pos[1]+b if (pos[1]+b >= 0 and pos[1]+b < self._dimension) else None
+                            x3 = pos[2]+c if (pos[2]+c >= 0 and pos[2]+c < self._board_size) else None
+                            x4 = pos[3]+d if (pos[3]+d >= 0 and pos[3]+d < self._board_size) else None
+                            move = (x1, x2, x3, x4)
+                            if None in move:
+                                continue
+                            legal_moves.append(move)
+            return [legal_moves]
+        elif self._dimension == 2:
+            return [[(1,1)]]
 
-    def _king(self, pos: tuple)-> list:
+    def _king(self, pos: tuple)-> list[list[tuple]]:
         legal_moves = []
         # outer loop sets up +/- 1 for each dimension, but only for one dim at a time
         for d in range(self._dimension):
@@ -107,9 +114,9 @@ class Moves:
                             legal_moves.append(tuple(finalmove))
                     legal_moves.append(tuple(move))
                 # remove duplicates. This keeps the overlay from turning opaque when a tile has many possible ways to get to
-        return list(set(legal_moves))
+        return list([move] for move in set(legal_moves))
 
-    def _knight(self, pos: tuple)-> list:
+    def _knight(self, pos: tuple)-> list[list[tuple]]:
         legal_moves = []
         for d in range(self._dimension):
             for i_1, p_1 in enumerate(pos):
@@ -145,68 +152,58 @@ class Moves:
                                 finalmove[i_2] -= 1
                                 legal_moves.append(tuple(finalmove))
                 # remove duplicates. This keeps the overlay from turning opaque when a tile has many possible ways to get to
-        return list(set(legal_moves))
+        
+        return list([move] for move in set(legal_moves))
+        
 
-    def _superqueen(self, pos: tuple)-> list:
+    def _superqueen(self, pos: tuple)-> list[list[tuple]]:
         legal_moves = []
         bound = self._board_size ** self._dimension // 5
         for p in range(random.randint(1, bound)):
             legal_moves.append(tuple([random.randint(0, 3) for d in range(self._dimension)]))
+        return list([move] for move in set(legal_moves))
+        
+    def _get_moves_in_dir(self, pos: tuple, dir: tuple) -> list[tuple]:
+        moves = []
+        # max board_size iterations necessary
+        for n in range(1, self._board_size):
+            move = tuple(i + j*n for i, j in zip(pos, dir))
+            if any(i < 0 or i >= self._board_size for i in move):
+                break
+            moves.append(move)
+        return moves
+
+    def _rook(self, pos: tuple)-> list[list[tuple]]:
+        legal_moves = []
+        directions = list(set([
+            *itertools.permutations([1] + [0]*(self._dimension - 1)),
+            *itertools.permutations([-1] + [0]*(self._dimension - 1))
+        ]))
+        for direction in directions:
+            legal_moves.append(self._get_moves_in_dir(pos, direction))
+
         return legal_moves
 
-    def _rook(self, pos: tuple)-> list:
+    def _bishop(self, pos: tuple)-> list[list[tuple]]:
         legal_moves = []
-        # loop through all dimensions
-        for direcion in range(self._dimension):
-            # for every dim, append all tiles in that direction
-            for i in range(self._board_size):
-                move = list(copy.copy(pos))
-                move[direcion] = i
-                # skip starting pos
-                if tuple(move) == pos:
-                    continue
-                legal_moves.append(tuple(move))
+        directions = list(set([
+            *itertools.permutations([1, 1] + [0]*(self._dimension - 2)),
+            *itertools.permutations([-1, 1] + [0]*(self._dimension - 2)),
+            *itertools.permutations([-1, -1] + [0]*(self._dimension - 2)),
+        ]))
+        for direction in directions:
+            legal_moves.append(self._get_moves_in_dir(pos, direction))
 
-        return list(set(legal_moves))
+        return legal_moves
 
-    def _bishop(self, pos: tuple)-> list:
-        legal_moves = []
-        # first, set up a loop over two dimensions at a time
-        for dim in range(self._dimension):
-            for index in range(self._dimension):
-                if index == dim: 
-                    continue
-                # then, add all moves with those two dimensions + n for n < _board_size
-                # actually, loop from -board size to board_size, but remove illegal positions
-                # also loop the sign of one of the dimensions, to get both diagonals
-                for sign in range(-1, 2, 2):
-                    for n in range(-self._board_size, self._board_size):
-                        move = list(copy.copy(pos))
-                        move[dim] += n
-                        move[index] += n * sign
-                        
-                        # remove the starting position
-                        if tuple(move) == pos:
-                            continue
-                        # range-check
-                        is_legal = True
-                        for x in move:
-                            if x >= self._board_size or x < 0:
-                                is_legal = False
-                                break
-                        if is_legal:
-                            legal_moves.append(tuple(move))
-
-        return list(set(legal_moves))
-
-    def _queen(self, pos: tuple)-> list:
+    def _queen(self, pos: tuple)-> list[list[tuple]]:
         # a queen is a rook and a bishop combined
         legal_moves = []
         legal_moves += self._rook(pos)
         legal_moves += self._bishop(pos)
-        return list(set([tuple(move) for move in legal_moves]))
+        return legal_moves
     
-    def _trebuchet(self, pos: tuple)-> list:
+    def _trebuchet(self, pos: tuple)-> list[list[tuple]]:
         # add (3, 1, 1, 0) in random order
         legal_moves = []
         for d in range(self._dimension):
@@ -238,4 +235,4 @@ class Moves:
                                                 legal_moves.append(tuple(move_3))
 
         # remove duplicates. This keeps the overlay from turning opaque when a tile has many possible ways to get to
-        return list(set(legal_moves))
+        return [list(set(legal_moves))]

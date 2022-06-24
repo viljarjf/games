@@ -54,4 +54,5 @@ class Tile:
         """
         self._piece.set_empty()
     
-
+    def __str__(self):
+        return str(self._piece)

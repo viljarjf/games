@@ -1,110 +1,10 @@
-from .board import Board
-from .tile import Tile
-from .piece import Piece, legal_names
-from .moves import Moves
+from chess.games.abstract.four_dim_chess import FourDimChess
+from chess.piece import Piece, legal_names
 
 import tkinter as tk
 import numpy as np
 from PIL import Image, ImageTk, ImageColor, ImageOps
 import os
-
-
-class FourDimChess:
-    """
-    Abstract class for 4D chess.
-
-    Methods:
-        move_piece: move a piece on the board and update the turn.
-    """
-    
-    # Hard-coded dim = 4
-    dimension = 4
-
-    def __init__(self, board_size = 4):
-        # initialize the board
-        self.board_size = board_size
-        self._board = Board(dimension = self.dimension, board_size = self.board_size)
-        self._board.init_4d()
-
-        # set up some stuff to enable moving
-        self._turn = 0
-        self._moves = Moves(self.dimension, self.board_size)
-    
-    def move_piece(self, init_pos, dest_pos)-> bool:
-        """
-        Move a piece from `init_pos` to `dest_pos`, if the move is allowed
-        Updates the turn (`self._turn`)
-
-        Args:
-            init_pos (tuple):   (x_o, y_o, x_i, y_i), 4D coordinates for the piece. 
-                                o-subscript refers to "outer", meaning position of the boards
-                                i_subscript refers to "inner", meaning position on a single 2D board 
-            dest_pos (tuple):   (x_o, y_o, x_i, y_i), 4D coordinates for the destination. 
-                                o-subscript refers to "outer", meaning position of the boards
-                                i_subscript refers to "inner", meaning position on a single 2D board 
-        
-        Returns:
-            bool, success state of the move
-        """
-        piece = self._board.get_tile(init_pos).get_piece()
-        dest_piece = self._board.get_tile(dest_pos).get_piece()
-        if piece.get_value() is not None:
-            legal_moves = self._moves.get_legal_moves(piece, init_pos)
-            # check if the move is legal
-            if dest_pos in legal_moves:
-                # attempt the move
-                if self._board.move(self._previous_pos, dest_pos):
-                    # Then, check if the move resulted in a check against the player
-                    c = piece.get_color()
-                    it = np.nditer(self._board.get_board(), flags = ["refs_ok", "multi_index"])
-
-                    for tile in it:
-                        p = self._board.get_tile(it.multi_index).get_piece()
-                        if p.get_value() == "King":
-                            if p.get_color() == c:
-                                if self.is_check(it.multi_index):
-                                    # the move was illegal. reset 
-                                    self._board.move(dest_pos, self._previous_pos)
-                                    self._board.set_tile(dest_pos, dest_piece)
-                                    return False
-                    self._turn += 1
-                    self._turn %= 2
-                    return True
-        return False 
-    
-    def is_check(self, pos)-> bool:
-        """return wether a position is in check or not
-        returns false if tile is empty
-
-        Args:
-            pos (tuple):    (x_o, y_o, x_i, y_i), 4D coordinates for the piece. 
-                            o-subscript refers to "outer", meaning position of the boards
-                            i_subscript refers to "inner", meaning position on a single 2D board
-
-        Returns:
-            bool: Wether the position is in check.
-        """
-        ### Setup
-        p = self._board.get_tile(pos).get_piece()
-        if p.get_color() is None:
-            return False
-        c = p.get_color()
-        moves = list()
-        it = np.nditer(self._board.get_board(), flags = ["refs_ok", "multi_index"])
-
-        for tile in it:
-            new_p = self._board.get_tile(it.multi_index).get_piece()
-            # if the piece is on the opposing team..
-            if new_p.get_color() is not None and new_p.get_color() != c:
-                # .. add their available moves to the list
-                [moves.append(i) for i in self._moves.get_legal_moves(new_p, it.multi_index)]
-
-        # remove duplicates
-        moves = list(set(moves))
-
-        return pos in moves
-
-
 
 
 class FourDimGUI(FourDimChess):
@@ -172,7 +72,7 @@ class FourDimGUI(FourDimChess):
                 keys (str): black, white.
                 vals: imageTk.PhotoImage instances
         """
-        dirname = os.path.dirname(__file__)
+        dirname = os.path.dirname(os.path.dirname(__file__))
         for p in legal_names:
             if p == "Superqueen":
                 img = Image.open(f"{dirname}/graphics/Queen.png")
@@ -232,13 +132,13 @@ class FourDimGUI(FourDimChess):
                 # draw the overlay of legal moves
                 piece = self._board.get_tile(clickpos).get_piece()
                 # first, ensure correct turn
-                if  (piece.get_color() == "white" and self._turn == 1) \
+                if  (piece.get_color() == "white" and self._turn) \
                     or \
-                    (piece.get_color() == "black" and self._turn == 0):
+                    (piece.get_color() == "black" and not self._turn):
                     self._previous_pos = None
                 # if colour is correct, draw an overlay of legal moves
                 elif piece.get_value() is not None:
-                    legal_moves = self._moves.get_legal_moves(piece, clickpos)
+                    legal_moves = self.get_legal_moves(clickpos)
                     for pos in legal_moves:
                         y0, x0 = self.pixel_from_pos(pos) 
                         self._overlay_ids.append(self._canvas.create_image(x0, y0, image=self._overlay_image, anchor='nw'))
@@ -304,20 +204,15 @@ class FourDimGUI(FourDimChess):
                 x = self.pad
 
         # draw pieces
-        # TODO replace with np.nditer maybe?
-        for x_o in range(self.board_size):
-            for y_o in range(self.board_size):
-                for x_i in range(self.board_size):
-                    for y_i in range(self.board_size):
-                        pos = (x_o, y_o, x_i, y_i)
-                        p = self._board.get_tile(pos).get_piece()
-                        if p.get_value() is None:
-                            continue
-                        id = self._id_board[pos]
-                        new_id = self._draw_piece(pos, p)
-                        if new_id is not None:
-                            self._canvas.delete(id)
-                            self._id_board[pos] = new_id
+        for pos in self._board.get_iterator():
+            p = self._board.get_tile(pos).get_piece()
+            if p.get_value() is None:
+                continue
+            id = self._id_board[pos]
+            new_id = self._draw_piece(pos, p)
+            if new_id is not None:
+                self._canvas.delete(id)
+                self._id_board[pos] = new_id
 
 
     def draw_tile(self, pos: tuple)-> bool:
