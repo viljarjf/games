@@ -30,7 +30,7 @@ class Moves:
                 each list is a direction from the piece.
         """
         if piece.get_value() == "Pawn":
-            moves = self._pawn(pos)
+            moves = self._pawn(pos, piece.get_color())
             return moves
         elif piece.get_value() == "King":
             moves = self._king(pos)
@@ -54,7 +54,7 @@ class Moves:
             moves = self._superqueen(pos)
             return moves
 
-    def _pawn(self, pos: tuple)-> list[list[tuple]]:
+    def _pawn(self, pos: tuple, color: str)-> list[list[tuple]]:
         if self._dimension == 4:
             # VERY WRONG, only for testing
             legal_moves = []
@@ -72,7 +72,16 @@ class Moves:
                             legal_moves.append(move)
             return [legal_moves]
         elif self._dimension == 2:
-            return [[(1,1)]]
+            legal_moves = []
+            up_or_down = 1 if color == "black" else -1
+            row = 1 if color == "black" else 6
+            if pos[0] == row:
+                legal_moves.append(self._get_moves_in_dir(pos, [up_or_down, 0])[0:2])
+            else:
+                legal_moves.append(self._get_moves_in_dir(pos, [up_or_down, 0])[0:1])
+            for dir in [[up_or_down, -1], [up_or_down, 1]]:
+                legal_moves.append(self._get_moves_in_dir(pos, dir)[0:1])
+            return legal_moves
 
     def _king(self, pos: tuple)-> list[list[tuple]]:
         legal_moves = []

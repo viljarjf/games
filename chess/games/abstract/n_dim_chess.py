@@ -27,16 +27,39 @@ class NDChess:
     def get_legal_moves(self, pos: int) -> list[tuple]:
         current_piece = self._board.get_tile(pos).get_piece()
         legal_moves = []
-        for moves in self._moves.get_moves(current_piece, pos):
-            for move in moves:
-                piece = self._board.get_tile(move).get_piece()
-                # stop in direction if same color piece
-                if piece.get_color() == current_piece.get_color():
-                    break
+        if current_piece.get_value() != "Pawn":
+            for moves in self._moves.get_moves(current_piece, pos):
+                for move in moves:
+                    piece = self._board.get_tile(move).get_piece()
+                    # stop in direction if same color piece
+                    if piece.get_color() == current_piece.get_color():
+                        break
+                    legal_moves.append(move)
+                    # stop in direction if hitting enemy
+                    if piece.get_value() is not None:
+                        break
+            return legal_moves
+
+        # pawns are stupid
+        # forward:
+        moves = self._moves.get_moves(current_piece, pos)
+        for move in moves[0]:
+            piece = self._board.get_tile(move).get_piece()
+            # only allowed if empty
+            if piece.get_value() is None:
                 legal_moves.append(move)
-                # stop in direction if hitting enemy
-                if piece.get_value() is not None:
-                    break
+            else:
+                break
+        # sides:
+        for move in moves[1:]:
+            if not move:
+                continue
+            move = move[0]
+            piece = self._board.get_tile(move).get_piece()
+            # only allowed if enemy
+            c = piece.get_color()
+            if c is not None and c != current_piece.get_color():
+                legal_moves.append(move)
         return legal_moves
 
     def move_piece(self, init_pos, dest_pos)-> bool:

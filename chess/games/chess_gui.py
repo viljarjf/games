@@ -30,8 +30,6 @@ class ChessGUI(Chess):
 
         super().__init__(board_size)
 
-        print(self._board)
-
         self._overlay_ids = list()
         self._previous_legal_moves = list()
         self._previous_pos = None
@@ -124,7 +122,6 @@ class ChessGUI(Chess):
             y_o = int(y_o)
 
             clickpos = (y_o, x_o)
-            print(clickpos)
             
             # handle moving
             if self._previous_pos is None:
