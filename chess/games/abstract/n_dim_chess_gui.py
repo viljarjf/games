@@ -9,7 +9,7 @@ from chess.games.abstract.n_dim_chess import NDChess
 from chess.piece import Piece, legal_names
 
 
-class NDimGUI(NDChess, ABC):
+class NDChessGUI(NDChess, ABC):
     """nD Chess, implemented with tkinter
 
     Call self.start() to play.

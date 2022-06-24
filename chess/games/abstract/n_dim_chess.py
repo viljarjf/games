@@ -128,4 +128,3 @@ class NDChess:
         moves = list(set(moves))
 
         return pos in moves
-

@@ -1,7 +1,7 @@
-from chess.games.abstract.n_dim_chess_gui import NDimGUI
+from chess.games.abstract.n_dim_chess_gui import NDChessGUI
 
 
-class ChessGUI(NDimGUI):
+class ChessGUI(NDChessGUI):
     """Chess, implemented with tkinter
 
     Call self.start() to play.
